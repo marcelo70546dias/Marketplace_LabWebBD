@@ -1,0 +1,255 @@
+﻿@model IEnumerable<Marketplace_LabWebBD.Models.Anuncio>
+
+@{
+    ViewData["Title"] = "Página Inicial";
+}
+
+<div class="bg-primary text-white p-4 mb-4 rounded shadow-sm text-center">
+    <h1 class="fw-bold">Encontre o seu próximo carro</h1>
+    <p class="fs-5">Milhares de ofertas de particulares e profissionais</p>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Filtros -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Pesquisa</h5>
+                </div>
+                <div class="card-body" style="max-height: 80vh; overflow-y: auto;">
+                    <form asp-action="Index" method="get">
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-grid-3x3-gap"></i> Categoria</label>
+                            <select name="categoria" class="form-select">
+                                <option value="">Todas</option>
+                                @foreach (var cat in (List<string>)ViewBag.Categorias)
+                                {
+                                    <option value="@cat" selected="@(ViewBag.FiltroCategoria == cat)">@cat</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Marca -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-bookmark"></i> Marca</label>
+                            <select name="marcaId" class="form-select" id="marcaSelect">
+                                <option value="">Todas</option>
+                                @foreach (var marca in (List<Marketplace_LabWebBD.Models.Marca>)ViewBag.Marcas)
+                                {
+                                    <option value="@marca.ID_Marca" selected="@(ViewBag.FiltroMarcaId == marca.ID_Marca)">@marca.Nome</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Preço -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-currency-euro"></i> Preço</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="precoMin" class="form-control form-control-sm" placeholder="Mín €" value="@ViewBag.FiltroPrecoMin" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="precoMax" class="form-control form-control-sm" placeholder="Máx €" value="@ViewBag.FiltroPrecoMax" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ano -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-calendar-range"></i> Ano</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="anoMin" class="form-control form-control-sm" placeholder="De" value="@ViewBag.FiltroAnoMin" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="anoMax" class="form-control form-control-sm" placeholder="Até" value="@ViewBag.FiltroAnoMax" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quilometragem -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-speedometer2"></i> Quilometragem Máxima</label>
+                            <input type="number" name="quilometragemMax" class="form-control" placeholder="Ex: 100000" value="@ViewBag.FiltroQuilometragemMax" />
+                        </div>
+
+                        <!-- Combustível -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-fuel-pump"></i> Combustível</label>
+                            <select name="combustivelId" class="form-select">
+                                <option value="">Qualquer</option>
+                                @foreach (var comb in (List<Marketplace_LabWebBD.Models.Combustivel>)ViewBag.Combustiveis)
+                                {
+                                    <option value="@comb.ID_Combustivel" selected="@(ViewBag.FiltroCombustivelId == comb.ID_Combustivel)">@comb.Tipo</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Caixa -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-gear"></i> Caixa</label>
+                            <select name="caixa" class="form-select">
+                                <option value="">Qualquer</option>
+                                @foreach (var cx in (List<string>)ViewBag.Caixas)
+                                {
+                                    <option value="@cx" selected="@(ViewBag.FiltroCaixa == cx)">@cx</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Localização -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-geo-alt"></i> Localização</label>
+                            <input type="text" name="localizacao" class="form-control" placeholder="Ex: Lisboa" value="@ViewBag.FiltroLocalizacao" />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger fw-bold">
+                                <i class="bi bi-search"></i> Aplicar Filtros
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-x-circle"></i> Limpar Tudo
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listagem de Anúncios -->
+        <div class="col-md-9">
+            <!-- Barra de Ordenação -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">
+                        @if (Model != null && Model.Any())
+                        {
+                            <text>@Model.Count() @(Model.Count() == 1 ? "anúncio encontrado" : "anúncios encontrados")</text>
+                        }
+                        else
+                        {
+                            <text>Nenhum anúncio encontrado</text>
+                        }
+                    </h5>
+                </div>
+                <div>
+                    <form asp-action="Index" method="get" class="d-inline">
+                        <!-- Manter filtros existentes -->
+                        <input type="hidden" name="categoria" value="@ViewBag.FiltroCategoria" />
+                        <input type="hidden" name="marcaId" value="@ViewBag.FiltroMarcaId" />
+                        <input type="hidden" name="modeloId" value="@ViewBag.FiltroModeloId" />
+                        <input type="hidden" name="anoMin" value="@ViewBag.FiltroAnoMin" />
+                        <input type="hidden" name="anoMax" value="@ViewBag.FiltroAnoMax" />
+                        <input type="hidden" name="precoMin" value="@ViewBag.FiltroPrecoMin" />
+                        <input type="hidden" name="precoMax" value="@ViewBag.FiltroPrecoMax" />
+                        <input type="hidden" name="quilometragemMax" value="@ViewBag.FiltroQuilometragemMax" />
+                        <input type="hidden" name="combustivelId" value="@ViewBag.FiltroCombustivelId" />
+                        <input type="hidden" name="caixa" value="@ViewBag.FiltroCaixa" />
+                        <input type="hidden" name="localizacao" value="@ViewBag.FiltroLocalizacao" />
+
+                        <label class="me-2"><i class="bi bi-sort-down"></i> Ordenar por:</label>
+                        <select name="ordenacao" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                            <option value="" selected="@(string.IsNullOrEmpty((string)ViewBag.Ordenacao))">Mais recentes</option>
+                            <option value="preco_asc" selected="@(ViewBag.Ordenacao == "preco_asc")">Preço (menor → maior)</option>
+                            <option value="preco_desc" selected="@(ViewBag.Ordenacao == "preco_desc")">Preço (maior → menor)</option>
+                            <option value="ano_desc" selected="@(ViewBag.Ordenacao == "ano_desc")">Ano (mais recente)</option>
+                            <option value="ano_asc" selected="@(ViewBag.Ordenacao == "ano_asc")">Ano (mais antigo)</option>
+                            <option value="quilometragem_asc" selected="@(ViewBag.Ordenacao == "quilometragem_asc")">Quilómetros (menor)</option>
+                            <option value="quilometragem_desc" selected="@(ViewBag.Ordenacao == "quilometragem_desc")">Quilómetros (maior)</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var anuncio in Model)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm border-0 hover-card">
+                                @{
+                                    var imagemCapa = anuncio.ID_CarroNavigation?.Fotos?.FirstOrDefault()?.Fotografia ?? "https://via.placeholder.com/300x200?text=Sem+Foto";
+                                    var marca = anuncio.ID_CarroNavigation?.ID_ModeloNavigation?.ID_MarcaNavigation?.Nome ?? "";
+                                    var modelo = anuncio.ID_CarroNavigation?.ID_ModeloNavigation?.Nome ?? "";
+                                }
+                                <a asp-controller="Anuncios" asp-action="Detalhes" asp-route-id="@anuncio.ID_Anuncio" class="text-decoration-none">
+                                    <div class="position-relative">
+                                        <img src="@imagemCapa" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@anuncio.Titulo">
+                                        @if (!string.IsNullOrEmpty(anuncio.ID_CarroNavigation?.Categoria))
+                                        {
+                                            <span class="badge bg-dark position-absolute top-0 start-0 m-2">
+                                                <i class="bi bi-grid-3x3-gap"></i> @anuncio.ID_CarroNavigation.Categoria
+                                            </span>
+                                        }
+                                        @if (anuncio.ID_CarroNavigation?.Fotos?.Count() > 1)
+                                        {
+                                            <span class="badge bg-secondary position-absolute top-0 end-0 m-2">
+                                                <i class="bi bi-images"></i> @anuncio.ID_CarroNavigation.Fotos.Count
+                                            </span>
+                                        }
+                                    </div>
+                                </a>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div style="flex: 1;">
+                                            <h6 class="card-title mb-1 text-truncate">
+                                                <strong>@marca @modelo</strong>
+                                            </h6>
+                                            <p class="text-muted small mb-0 text-truncate">@anuncio.Titulo</p>
+                                        </div>
+                                    </div>
+                                    <h4 class="text-primary fw-bold mb-3">@anuncio.Preco.ToString("C")</h4>
+
+                                    <div class="small mb-2">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span><i class="bi bi-calendar3 text-muted"></i> Ano:</span>
+                                            <strong>@anuncio.ID_CarroNavigation?.Ano</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span><i class="bi bi-speedometer2 text-muted"></i> Quilómetros:</span>
+                                            <strong>@anuncio.ID_CarroNavigation?.Quilometragem.ToString("N0") km</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span><i class="bi bi-fuel-pump text-muted"></i> Combustível:</span>
+                                            <strong>@anuncio.ID_CarroNavigation?.ID_CombustivelNavigation?.Tipo</strong>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(anuncio.ID_CarroNavigation?.Caixa))
+                                        {
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span><i class="bi bi-gear text-muted"></i> Caixa:</span>
+                                                <strong>@anuncio.ID_CarroNavigation?.Caixa</strong>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(anuncio.Localizacao))
+                                    {
+                                        <div class="mt-2 text-muted small border-top pt-2">
+                                            <i class="bi bi-geo-alt-fill text-danger"></i> @anuncio.Localizacao
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer bg-white border-top">
+                                    <a asp-controller="Anuncios" asp-action="Detalhes" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-primary w-100">
+                                        <i class="bi bi-eye"></i> Ver Detalhes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center mt-5">
+                        <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                        <h3 class="text-muted mt-3">Nenhum anúncio encontrado</h3>
+                        <p>Tente alterar os filtros de pesquisa.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

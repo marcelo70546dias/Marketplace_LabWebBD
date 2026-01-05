@@ -1,0 +1,123 @@
+@model IEnumerable<Marketplace_LabWebBD.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Pedidos de Administrador Pendentes";
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index">
+                    <i class="bi bi-shield-lock-fill"></i> Admin
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Pedidos Pendentes</li>
+        </ol>
+    </nav>
+
+    <div class="bg-warning text-dark p-4 mb-4 rounded shadow-sm">
+        <h1 class="fw-bold"><i class="bi bi-person-check-fill"></i> Pedidos de Administrador</h1>
+        <p class="fs-5 mb-0">Aprovar ou rejeitar pedidos de utilizadores que querem ser administradores</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill"></i> @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-hourglass-split"></i>
+                    @Model.Count() @(Model.Count() == 1 ? "pedido pendente" : "pedidos pendentes")
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Data Registo</th>
+                                <th>Contacto</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                        <strong>@user.Nome</strong>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-envelope"></i>
+                                        @user.Email
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar3"></i>
+                                        @user.Data_Registo.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(user.Contacto))
+                                        {
+                                            <i class="bi bi-telephone"></i>
+                                            <text>@user.Contacto</text>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <form asp-action="AprovarAdmin" asp-route-id="@user.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Tem certeza que deseja aprovar este utilizador como Administrador?')">
+                                                <i class="bi bi-check-circle"></i> Aprovar
+                                            </button>
+                                        </form>
+                                        <form asp-action="RejeitarAdmin" asp-route-id="@user.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja rejeitar este pedido?')">
+                                                <i class="bi bi-x-circle"></i> Rejeitar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                <h3 class="text-muted mt-3">Nenhum pedido pendente</h3>
+                <p>Não existem pedidos de administrador aguardando aprovação</p>
+                <a asp-action="Index" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left-circle"></i> Voltar ao Painel
+                </a>
+            </div>
+        </div>
+    }
+</div>

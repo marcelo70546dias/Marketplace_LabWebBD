@@ -1,0 +1,202 @@
+@model List<Log_Admin>
+
+@{
+    ViewData["Title"] = "Logs Administrativos";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-journal-text"></i> Logs Administrativos</h2>
+            <p class="text-muted">Histórico de todas as ações administrativas</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="AdminLogs" class="row g-3">
+                <div class="col-md-4">
+                    <label for="actionFilter" class="form-label">Tipo de Ação</label>
+                    <select class="form-select" id="actionFilter" name="actionFilter">
+                        <option value="">Todas</option>
+                        <option value="BLOQUEIO_UTILIZADOR" selected="@(ViewBag.ActionFilter == "BLOQUEIO_UTILIZADOR")">Bloqueio de Utilizador</option>
+                        <option value="DESBLOQUEIO_UTILIZADOR" selected="@(ViewBag.ActionFilter == "DESBLOQUEIO_UTILIZADOR")">Desbloqueio de Utilizador</option>
+                        <option value="APROVACAO_VENDEDOR" selected="@(ViewBag.ActionFilter == "APROVACAO_VENDEDOR")">Aprovação de Vendedor</option>
+                        <option value="REJEICAO_VENDEDOR" selected="@(ViewBag.ActionFilter == "REJEICAO_VENDEDOR")">Rejeição de Vendedor</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="userId" class="form-label">ID do Utilizador</label>
+                    <input type="number" class="form-control" id="userId" name="userId"
+                           value="@ViewBag.UserId" placeholder="Filtrar por ID...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-filter"></i> Filtrar
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a asp-action="AdminLogs" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Logs -->
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo de Ação</th>
+                                <th>Administrador</th>
+                                <th>Utilizador Afetado</th>
+                                <th>Endereço IP</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <small>
+                                            @log.Data_Hora.ToString("dd/MM/yyyy")<br>
+                                            @log.Data_Hora.ToString("HH:mm:ss")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetLogBadgeClass(log.Tipo_Acao)">
+                                            @GetLogActionName(log.Tipo_Acao)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (log.ID_AdminNavigation?.ID_UtilizadorNavigation != null)
+                                        {
+                                            <strong>@log.ID_AdminNavigation.ID_UtilizadorNavigation.Nome</strong><br>
+                                            <small class="text-muted">@log.ID_AdminNavigation.ID_UtilizadorNavigation.Email</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (log.ID_Utilizador_AfetadoNavigation != null)
+                                        {
+                                            <a asp-action="UserDetails" asp-route-id="@log.ID_Utilizador_AfetadoNavigation.ID"
+                                               class="text-decoration-none">
+                                                <strong>@log.ID_Utilizador_AfetadoNavigation.Nome</strong><br>
+                                                <small class="text-muted">@log.ID_Utilizador_AfetadoNavigation.Email</small>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">ID: @log.ID_Utilizador_Afetado</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <code>@log.IP_Address</code>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(log.Descricao))
+                                        {
+                                            <small>@log.Descricao</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center mt-4">
+                            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="AdminLogs"
+                                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                   asp-route-actionFilter="@ViewBag.ActionFilter"
+                                   asp-route-userId="@ViewBag.UserId">
+                                    Anterior
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="AdminLogs"
+                                       asp-route-page="@i"
+                                       asp-route-actionFilter="@ViewBag.ActionFilter"
+                                       asp-route-userId="@ViewBag.UserId">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="AdminLogs"
+                                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                   asp-route-actionFilter="@ViewBag.ActionFilter"
+                                   asp-route-userId="@ViewBag.UserId">
+                                    Próxima
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+
+                <div class="mt-3">
+                    <p class="text-muted mb-0">
+                        <small>Total de registos: @Model.Count</small>
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Nenhum log encontrado com os filtros selecionados.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetLogBadgeClass(string action)
+    {
+        return action switch
+        {
+            "BLOQUEIO_UTILIZADOR" => "bg-danger",
+            "DESBLOQUEIO_UTILIZADOR" => "bg-success",
+            "APROVACAO_VENDEDOR" => "bg-primary",
+            "REJEICAO_VENDEDOR" => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetLogActionName(string action)
+    {
+        return action switch
+        {
+            "BLOQUEIO_UTILIZADOR" => "Bloqueio de Utilizador",
+            "DESBLOQUEIO_UTILIZADOR" => "Desbloqueio de Utilizador",
+            "APROVACAO_VENDEDOR" => "Aprovação de Vendedor",
+            "REJEICAO_VENDEDOR" => "Rejeição de Vendedor",
+            _ => action
+        };
+    }
+}

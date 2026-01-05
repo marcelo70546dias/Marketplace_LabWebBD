@@ -1,0 +1,73 @@
+@model CreateVisitaViewModel
+
+@{
+    ViewData["Title"] = "Agendar Visita";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0"><i class="bi bi-calendar-check"></i> Agendar Visita</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Informação:</strong> Agende uma visita para conhecer o veículo pessoalmente antes de decidir.
+                    </div>
+
+                    <div class="row mb-4">
+                        @if (!string.IsNullOrEmpty(Model.FotoPrincipal))
+                        {
+                            <div class="col-md-4">
+                                <img src="@Model.FotoPrincipal" alt="@Model.Titulo" class="img-fluid rounded" />
+                            </div>
+                        }
+                        <div class="col-md-8">
+                            <h4>@Model.Titulo</h4>
+                            <p class="text-muted">@Model.MarcaModelo</p>
+                            <h5 class="text-primary">@Model.Preco.ToString("C")</h5>
+                        </div>
+                    </div>
+
+                    <form asp-action="AgendarVisita" asp-route-id="@Model.ID_Anuncio" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Data_Hora" class="form-label"></label>
+                            <input asp-for="Data_Hora" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="Data_Hora" class="text-danger"></span>
+                            <small class="form-text text-muted">Selecione uma data e hora futuras</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Localizacao" class="form-label"></label>
+                            <input asp-for="Localizacao" class="form-control" value="@Model.Localizacao" />
+                            <span asp-validation-for="Localizacao" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Observacoes" class="form-label"></label>
+                            <textarea asp-for="Observacoes" class="form-control" rows="3" placeholder="Adicione observações sobre a visita (opcional)"></textarea>
+                            <span asp-validation-for="Observacoes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Agendamento
+                            </button>
+                            <a asp-action="AnuncioDetails" asp-route-id="@Model.ID_Anuncio" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar ao Anúncio
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

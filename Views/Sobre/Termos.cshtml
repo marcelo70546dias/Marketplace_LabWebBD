@@ -1,0 +1,76 @@
+@model Marketplace_LabWebBD.Models.Configuracao_Sistema
+
+@{
+    ViewData["Title"] = "Termos de Uso";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="bi bi-file-earmark-text"></i> Termos de Uso
+                </h1>
+                <p class="lead text-muted">Última atualização: @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    @if (!string.IsNullOrEmpty(Model?.Termos_Uso))
+                    {
+                        <div style="white-space: pre-line;">@Model.Termos_Uso</div>
+                    }
+                    else
+                    {
+                        <h3>1. Aceitação dos Termos</h3>
+                        <p>Ao aceder e utilizar o MyOnlineStand, você concorda em cumprir e estar vinculado aos seguintes termos e condições de uso.</p>
+
+                        <h3 class="mt-4">2. Uso do Serviço</h3>
+                        <p>O MyOnlineStand é uma plataforma que conecta vendedores e compradores de veículos. Não somos responsáveis pelas transações realizadas entre utilizadores.</p>
+
+                        <h3 class="mt-4">3. Responsabilidades do Utilizador</h3>
+                        <ul>
+                            <li>Fornecer informações verdadeiras e precisas nos anúncios</li>
+                            <li>Não publicar conteúdo ilegal, ofensivo ou enganoso</li>
+                            <li>Respeitar os direitos de propriedade intelectual de terceiros</li>
+                            <li>Manter a confidencialidade das suas credenciais de acesso</li>
+                        </ul>
+
+                        <h3 class="mt-4">4. Anúncios e Listagens</h3>
+                        <p>Os vendedores são responsáveis pela precisão das informações fornecidas nos seus anúncios. A plataforma reserva-se o direito de remover anúncios que violem estes termos.</p>
+
+                        <h3 class="mt-4">5. Transações</h3>
+                        <p>Todas as transações são realizadas diretamente entre compradores e vendedores. O MyOnlineStand não é parte das transações e não assume qualquer responsabilidade pelos acordos firmados.</p>
+
+                        <h3 class="mt-4">6. Propriedade Intelectual</h3>
+                        <p>Todo o conteúdo disponível no MyOnlineStand, incluindo textos, gráficos, logotipos e software, é propriedade da plataforma ou dos seus licenciadores.</p>
+
+                        <h3 class="mt-4">7. Limitação de Responsabilidade</h3>
+                        <p>O MyOnlineStand não se responsabiliza por:</p>
+                        <ul>
+                            <li>Precisão, qualidade ou legalidade dos anúncios</li>
+                            <li>Capacidade dos vendedores de completar uma venda</li>
+                            <li>Capacidade dos compradores de completar uma compra</li>
+                            <li>Defeitos, danos ou problemas com veículos adquiridos através da plataforma</li>
+                        </ul>
+
+                        <h3 class="mt-4">8. Modificações dos Termos</h3>
+                        <p>Reservamo-nos o direito de modificar estes termos a qualquer momento. As alterações entrarão em vigor imediatamente após a publicação na plataforma.</p>
+
+                        <h3 class="mt-4">9. Lei Aplicável</h3>
+                        <p>Estes termos são regidos pelas leis de Portugal. Qualquer disputa será resolvida nos tribunais portugueses.</p>
+
+                        <h3 class="mt-4">10. Contacto</h3>
+                        <p>Para questões sobre estes termos, entre em contacto connosco através da <a asp-controller="Sobre" asp-action="Contactos">página de contactos</a>.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Início
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+@model Marketplace_LabWebBD.Models.Configuracao_Sistema
+
+@{
+    ViewData["Title"] = "Contactos";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="bi bi-envelope"></i> Contactos
+                </h1>
+                <p class="lead text-muted">Entre em contacto connosco</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Informações de Contacto -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4"><i class="bi bi-info-circle"></i> Informações</h4>
+
+                            @if (!string.IsNullOrEmpty(Model?.Email_Contacto))
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-envelope-fill text-primary"></i> Email</h6>
+                                    <a href="mailto:@Model.Email_Contacto" class="text-decoration-none">@Model.Email_Contacto</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-envelope-fill text-primary"></i> Email</h6>
+                                    <a href="mailto:contacto@myonlinestand.pt" class="text-decoration-none">contacto@myonlinestand.pt</a>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model?.Telefone_Contacto))
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-telephone-fill text-primary"></i> Telefone</h6>
+                                    <a href="tel:@Model.Telefone_Contacto" class="text-decoration-none">@Model.Telefone_Contacto</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-telephone-fill text-primary"></i> Telefone</h6>
+                                    <a href="tel:+351210000000" class="text-decoration-none">+351 210 000 000</a>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model?.Horario_Suporte))
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-clock-fill text-primary"></i> Horário de Suporte</h6>
+                                    <p style="white-space: pre-line;" class="mb-0">@Model.Horario_Suporte</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="bi bi-clock-fill text-primary"></i> Horário de Suporte</h6>
+                                    <p class="mb-0">
+                                        Segunda a Sexta: 9h00 - 18h00<br />
+                                        Sábado: 9h00 - 13h00<br />
+                                        Domingo: Encerrado
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário de Contacto -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4"><i class="bi bi-chat-dots"></i> Envie-nos uma mensagem</h4>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Nome</label>
+                                    <input type="text" class="form-control" placeholder="O seu nome" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" placeholder="O seu email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Assunto</label>
+                                    <input type="text" class="form-control" placeholder="Assunto da mensagem" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mensagem</label>
+                                    <textarea class="form-control" rows="4" placeholder="A sua mensagem..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" disabled>
+                                    <i class="bi bi-send"></i> Enviar Mensagem
+                                </button>
+                                <small class="text-muted d-block mt-2 text-center">Funcionalidade em desenvolvimento</small>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redes Sociais -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">Siga-nos nas Redes Sociais</h5>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-lg">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-danger btn-lg">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

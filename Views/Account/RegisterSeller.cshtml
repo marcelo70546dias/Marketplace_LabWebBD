@@ -1,0 +1,131 @@
+@model RegisterVendedorViewModel
+
+@{
+    ViewData["Title"] = "Registar como Vendedor";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="bi bi-shop"></i> Registar como Vendedor</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Informação:</strong> O seu pedido para se tornar vendedor será analisado por um administrador. Após aprovação, poderá completar o seu perfil e começar a vender.
+                    </div>
+
+                    <form asp-action="RegisterSeller" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <h5 class="mb-3">Informações Básicas</h5>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Nome completo ou nome da empresa" />
+                                <span asp-validation-for="Nome" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Username" class="form-label"></label>
+                                <input asp-for="Username" class="form-control" placeholder="Nome de utilizador único" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="Mínimo 6 caracteres" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Repita a password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Contacto" class="form-label"></label>
+                                <input asp-for="Contacto" class="form-control" placeholder="+351 XXX XXX XXX" required />
+                                <span asp-validation-for="Contacto" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Morada" class="form-label"></label>
+                                <input asp-for="Morada" class="form-control" placeholder="Rua, número, andar..." required />
+                                <span asp-validation-for="Morada" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Codigo_Postal" class="form-label"></label>
+                                <input asp-for="Codigo_Postal" class="form-control" placeholder="XXXX-XXX" required />
+                                <span asp-validation-for="Codigo_Postal" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Distrito" class="form-label"></label>
+                                <select asp-for="Distrito" class="form-select" required>
+                                    <option value="">Selecione o distrito...</option>
+                                    <option value="Aveiro">Aveiro</option>
+                                    <option value="Beja">Beja</option>
+                                    <option value="Braga">Braga</option>
+                                    <option value="Bragança">Bragança</option>
+                                    <option value="Castelo Branco">Castelo Branco</option>
+                                    <option value="Coimbra">Coimbra</option>
+                                    <option value="Évora">Évora</option>
+                                    <option value="Faro">Faro</option>
+                                    <option value="Guarda">Guarda</option>
+                                    <option value="Leiria">Leiria</option>
+                                    <option value="Lisboa">Lisboa</option>
+                                    <option value="Portalegre">Portalegre</option>
+                                    <option value="Porto">Porto</option>
+                                    <option value="Santarém">Santarém</option>
+                                    <option value="Setúbal">Setúbal</option>
+                                    <option value="Viana do Castelo">Viana do Castelo</option>
+                                    <option value="Vila Real">Vila Real</option>
+                                    <option value="Viseu">Viseu</option>
+                                    <option value="Açores">Açores</option>
+                                    <option value="Madeira">Madeira</option>
+                                </select>
+                                <span asp-validation-for="Distrito" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <p class="text-muted"><small>Após aprovação, será solicitado a completar o seu perfil com tipo de vendedor (Particular/Empresa), NIF e dados de faturação.</small></p>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Submeter Pedido de Vendedor
+                            </button>
+                            <a asp-action="Login" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Já tem conta? Fazer login
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,193 @@
+@model AnuncioViewModel
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <a asp-action="Search" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar à Pesquisa
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Galeria de Fotos -->
+        <div class="col-lg-8 mb-4">
+            @if (Model.Fotos.Any())
+            {
+                <div id="carouselFotos" class="carousel slide shadow" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        @for (int i = 0; i < Model.Fotos.Count; i++)
+                        {
+                            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="@i"
+                                    class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")"
+                                    aria-label="Foto @(i + 1)"></button>
+                        }
+                    </div>
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < Model.Fotos.OrderBy(f => f.Ordem).Count(); i++)
+                        {
+                            var foto = Model.Fotos.OrderBy(f => f.Ordem).ElementAt(i);
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@foto.Fotografia" class="d-block w-100" alt="Foto @(i + 1)" style="height: 500px; object-fit: cover;">
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselFotos" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselFotos" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Próxima</span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow">
+                    <div class="card-body text-center p-5 bg-light">
+                        <i class="bi bi-car-front" style="font-size: 6rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Sem fotografias disponíveis</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Descrição -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-text"></i> Descrição</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Descricao))
+                    {
+                        <p style="white-space: pre-line;">@Model.Descricao</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Sem descrição disponível.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Especificações -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Especificações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-tag-fill text-primary"></i> Marca:</strong>
+                            <span class="float-end">@Model.MarcaNome</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-tag text-primary"></i> Modelo:</strong>
+                            <span class="float-end">@Model.ModeloNome</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-calendar-event text-info"></i> Ano:</strong>
+                            <span class="float-end">@Model.Ano</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-speedometer2 text-danger"></i> Quilometragem:</strong>
+                            <span class="float-end">@Model.Quilometragem.ToString("N0") km</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-fuel-pump text-warning"></i> Combustível:</strong>
+                            <span class="float-end">@Model.CombustivelTipo</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-gear text-secondary"></i> Caixa:</strong>
+                            <span class="float-end">@Model.Caixa</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-grid-3x2 text-success"></i> Categoria:</strong>
+                            <span class="float-end">@Model.Categoria</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-people text-info"></i> Lotação:</strong>
+                            <span class="float-end">@Model.Lotacao lugares</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-palette text-primary"></i> Cor:</strong>
+                            <span class="float-end">@Model.Cor</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-geo-alt text-danger"></i> Localização:</strong>
+                            <span class="float-end">@Model.Localizacao</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar de Ações -->
+        <div class="col-lg-4">
+            <!-- Preço -->
+            <div class="card shadow mb-4 border-primary">
+                <div class="card-body text-center">
+                    <h2 class="text-primary fw-bold mb-0">€@Model.Preco.ToString("N0")</h2>
+                    <p class="text-muted small mb-0">Preço de venda</p>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Interessado?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Faça login como Comprador</strong> para reservar, agendar visitas ou comprar este veículo.
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sessão
+                        </a>
+                        <a asp-controller="Account" asp-action="RegisterBuyer" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus"></i> Registar como Comprador
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informação do Prazo de Reserva -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informação de Reserva</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-0">
+                        <strong>Prazo de reserva:</strong> @(Model.Prazo_Reserva_Dias ?? 7) dias
+                    </p>
+                    <p class="small text-muted mb-0 mt-2">
+                        Ao reservar este veículo, terá @(Model.Prazo_Reserva_Dias ?? 7) dias para finalizar a compra.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Publicação -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-clock"></i> Publicação</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">
+                        <strong>Publicado:</strong> @Model.Data_Publicacao.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                    @if (Model.Data_Atualizacao.HasValue)
+                    {
+                        <p class="small mb-0">
+                            <strong>Atualizado:</strong> @Model.Data_Atualizacao.Value.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

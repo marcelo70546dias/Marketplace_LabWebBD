@@ -1,0 +1,72 @@
+@model Marketplace_LabWebBD.Models.Configuracao_Sistema
+
+@{
+    ViewData["Title"] = "Sobre Nós";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="bi bi-info-circle"></i> Sobre Nós
+                </h1>
+                <p class="lead text-muted">Conheça o @(Model?.Nome_Marketplace ?? "MyOnlineStand")</p>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-3"><i class="bi bi-shop"></i> Quem Somos</h3>
+                    <div style="white-space: pre-line;">
+                        @if (!string.IsNullOrEmpty(Model?.Descricao_Sobre))
+                        {
+                            @Model.Descricao_Sobre
+                        }
+                        else
+                        {
+                            <p>Bem-vindo ao <strong>MyOnlineStand</strong>, o seu marketplace de confiança para compra e venda de automóveis!</p>
+                            <p>Conectamos compradores e vendedores em todo o país, oferecendo uma plataforma segura, fácil de usar e com milhares de anúncios de veículos de todas as marcas e modelos.</p>
+                            <p>A nossa missão é simplificar o processo de compra e venda de automóveis, proporcionando transparência, segurança e a melhor experiência possível para todos os nossos utilizadores.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-shield-check text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Segurança</h5>
+                            <p class="card-text text-muted small">Verificação de anúncios e proteção de dados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-search text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Pesquisa Fácil</h5>
+                            <p class="card-text text-muted small">Filtros avançados para encontrar o carro ideal</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-people text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Comunidade</h5>
+                            <p class="card-text text-muted small">Milhares de utilizadores ativos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search"></i> Explorar Veículos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

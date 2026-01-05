@@ -1,0 +1,213 @@
+@model BuyerDashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard Comprador";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-primary text-white p-4 rounded shadow-sm">
+                <h1 class="fw-bold"><i class="bi bi-person-circle"></i> Bem-vindo, Comprador!</h1>
+                <p class="fs-5 mb-0">Encontre o seu próximo veículo</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form asp-action="Search" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="Localizacao" class="form-control" placeholder="Localização..." />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" name="Preco_Max" class="form-control" placeholder="Preço máximo..." />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" name="Ano_Min" class="form-control" placeholder="Ano mínimo..." />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> Pesquisar
+                            </button>
+                        </div>
+                        <div class="col-12 text-center">
+                            <a asp-action="Search" class="text-decoration-none">
+                                <i class="bi bi-filter"></i> Pesquisa avançada
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-search text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Pesquisar</h5>
+                    <p class="card-text text-muted small">Encontre o veículo perfeito</p>
+                    <a asp-action="Search" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right-circle"></i> Pesquisar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-bookmark-heart text-danger" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Reservas</h5>
+                    <p class="card-text text-muted small">Minhas reservas ativas</p>
+                    <a href="#" class="btn btn-outline-danger disabled">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Reservas
+                    </a>
+                    <small class="d-block mt-2 text-muted">(Fase D)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check text-info" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Visitas</h5>
+                    <p class="card-text text-muted small">Visitas agendadas</p>
+                    <a href="#" class="btn btn-outline-info disabled">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Visitas
+                    </a>
+                    <small class="d-block mt-2 text-muted">(Fase E)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-cart-check text-success" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Compras</h5>
+                    <p class="card-text text-muted small">Histórico de compras</p>
+                    <a href="#" class="btn btn-outline-success disabled">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Compras
+                    </a>
+                    <small class="d-block mt-2 text-muted">(Fase F)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 hover-card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Promoção a Admin</h5>
+                    <p class="card-text text-muted small">Solicitar promoção</p>
+                    <a asp-action="SolicitarPromocao" class="btn btn-outline-warning">
+                        <i class="bi bi-send"></i> Solicitar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anúncios Recentes -->
+    @if (Model.AnunciosRecentes.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><i class="bi bi-clock-history"></i> Anúncios Recentes</h4>
+            </div>
+
+            @foreach (var anuncio in Model.AnunciosRecentes)
+            {
+                <div class="col-md-4 col-lg-2 mb-4">
+                    <div class="card h-100 hover-card">
+                        @if (!string.IsNullOrEmpty(anuncio.FotoPrincipal))
+                        {
+                            <img src="@anuncio.FotoPrincipal" class="card-img-top" alt="@anuncio.Titulo" style="height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="bi bi-car-front text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+
+                        <div class="card-body p-3">
+                            <h6 class="card-title text-truncate">@anuncio.Titulo</h6>
+                            <p class="text-muted small mb-1">@anuncio.MarcaNome @anuncio.ModeloNome</p>
+                            <h5 class="text-primary mb-2">€@anuncio.Preco.ToString("N0")</h5>
+                            <p class="small text-muted mb-2">
+                                <i class="bi bi-calendar"></i> @anuncio.Ano |
+                                <i class="bi bi-speedometer2"></i> @anuncio.Quilometragem.ToString("N0") km
+                            </p>
+                            <a asp-action="AnuncioDetails" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-eye"></i> Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Anúncios em Destaque -->
+    @if (Model.AnunciosDestaque.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3"><i class="bi bi-star-fill text-warning"></i> Destaques</h4>
+            </div>
+
+            @foreach (var anuncio in Model.AnunciosDestaque)
+            {
+                <div class="col-md-4 col-lg-2 mb-4">
+                    <div class="card h-100 hover-card border-warning">
+                        @if (!string.IsNullOrEmpty(anuncio.FotoPrincipal))
+                        {
+                            <img src="@anuncio.FotoPrincipal" class="card-img-top" alt="@anuncio.Titulo" style="height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="bi bi-car-front text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+
+                        <div class="card-body p-3">
+                            <div class="badge bg-warning text-dark mb-2">Destaque</div>
+                            <h6 class="card-title text-truncate">@anuncio.Titulo</h6>
+                            <p class="text-muted small mb-1">@anuncio.MarcaNome @anuncio.ModeloNome</p>
+                            <h5 class="text-primary mb-2">€@anuncio.Preco.ToString("N0")</h5>
+                            <p class="small text-muted mb-2">
+                                <i class="bi bi-calendar"></i> @anuncio.Ano |
+                                <i class="bi bi-speedometer2"></i> @anuncio.Quilometragem.ToString("N0") km
+                            </p>
+                            <a asp-action="AnuncioDetails" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-eye"></i> Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    }
+</style>

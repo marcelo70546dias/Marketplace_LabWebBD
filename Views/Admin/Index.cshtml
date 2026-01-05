@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Painel Administração";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="bg-danger text-white p-4 mb-4 rounded shadow-sm">
+                <h1 class="fw-bold"><i class="bi bi-shield-lock-fill"></i> Painel de Administração</h1>
+                <p class="fs-5 mb-0">Gerir utilizadores, anúncios e configurações do sistema</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Utilizadores</h5>
+                    <p class="card-text text-muted">Gerir contas de utilizadores</p>
+                    <a asp-action="Users" class="btn btn-primary">
+                        <i class="bi bi-arrow-right-circle"></i> Gerir
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-shop-window text-success" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Vendedores</h5>
+                    <p class="card-text text-muted">Aprovar novos vendedores</p>
+                    <a asp-action="PendentesVendedor" class="btn btn-success">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Pedidos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-plus text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Promoções a Admin</h5>
+                    <p class="card-text text-muted">Pedidos de promoção</p>
+                    <a asp-action="PedidosPromocao" class="btn btn-warning">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Pedidos
+                        @if (ViewBag.NumPedidosPromocao != null && ViewBag.NumPedidosPromocao > 0)
+                        {
+                            <span class="badge bg-danger ms-1">@ViewBag.NumPedidosPromocao</span>
+                        }
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-journal-text text-info" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Logs</h5>
+                    <p class="card-text text-muted">Histórico de ações administrativas</p>
+                    <a asp-action="AdminLogs" class="btn btn-info">
+                        <i class="bi bi-arrow-right-circle"></i> Ver Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-megaphone-fill text-info" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Anúncios</h5>
+                    <p class="card-text text-muted">Moderar anúncios</p>
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-hourglass-split"></i> Em Breve
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 h-100 hover-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-gear-fill text-secondary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Configurações</h5>
+                    <p class="card-text text-muted">Sistema e parâmetros</p>
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-hourglass-split"></i> Em Breve
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> Atividade Recente</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">
+                        <i class="bi bi-clock-history"></i><br />
+                        Sem atividade recente para mostrar
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Total Utilizadores</small>
+                        <h4 class="fw-bold text-primary">0</h4>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Anúncios Ativos</small>
+                        <h4 class="fw-bold text-success">0</h4>
+                    </div>
+                    <div class="mb-0">
+                        <small class="text-muted">Vendas Este Mês</small>
+                        <h4 class="fw-bold text-warning">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

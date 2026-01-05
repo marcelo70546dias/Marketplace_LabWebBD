@@ -1,0 +1,268 @@
+@model List<PedidoPromocaoAdminViewModel>
+
+@{
+    ViewData["Title"] = "Pedidos de Promoção a Admin";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-shield-plus"></i> Pedidos de Promoção a Administrador</h2>
+            <p class="text-muted">Gerir pedidos de promoção de Compradores e Vendedores</p>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group" aria-label="Menu de Gestão de Utilizadores">
+                <a asp-action="Users" class="btn btn-outline-primary">
+                    <i class="bi bi-people"></i> Utilizadores
+                </a>
+                <a asp-action="PendentesVendedor" class="btn btn-outline-primary">
+                    <i class="bi bi-shop-window"></i> Pedidos Vendedor
+                </a>
+                <a asp-action="PedidosPromocao" class="btn btn-primary active">
+                    <i class="bi bi-shield-plus"></i> Pedidos Promoção Admin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="btn-group" role="group">
+                <a asp-action="PedidosPromocao" asp-route-filtroEstado="Pendente"
+                   class="btn btn-@(ViewBag.FiltroEstado == "Pendente" ? "primary" : "outline-primary")">
+                    <i class="bi bi-clock"></i> Pendentes
+                    @if (ViewBag.NumPendentes > 0)
+                    {
+                        <span class="badge bg-danger">@ViewBag.NumPendentes</span>
+                    }
+                </a>
+                <a asp-action="PedidosPromocao" asp-route-filtroEstado="Aprovado"
+                   class="btn btn-@(ViewBag.FiltroEstado == "Aprovado" ? "primary" : "outline-primary")">
+                    <i class="bi bi-check-circle"></i> Aprovados
+                </a>
+                <a asp-action="PedidosPromocao" asp-route-filtroEstado="Rejeitado"
+                   class="btn btn-@(ViewBag.FiltroEstado == "Rejeitado" ? "primary" : "outline-primary")">
+                    <i class="bi bi-x-circle"></i> Rejeitados
+                </a>
+                <a asp-action="PedidosPromocao" asp-route-filtroEstado="Todos"
+                   class="btn btn-@(ViewBag.FiltroEstado == "Todos" ? "primary" : "outline-primary")">
+                    <i class="bi bi-list"></i> Todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Pedidos -->
+    @if (Model.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Utilizador</th>
+                                        <th>Tipo Atual</th>
+                                        <th>Justificação</th>
+                                        <th>Data Pedido</th>
+                                        <th>Estado</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pedido in Model)
+                                    {
+                                        <tr>
+                                            <td>#@pedido.ID_Pedido</td>
+                                            <td>
+                                                <strong>@pedido.NomeUtilizador</strong><br />
+                                                <small class="text-muted">@pedido.EmailUtilizador</small>
+                                            </td>
+                                            <td>
+                                                @if (pedido.Tipo_Utilizador_Atual == "Comprador")
+                                                {
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-cart"></i> Comprador
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-shop"></i> Vendedor
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(pedido.Justificacao))
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                            data-bs-toggle="modal" data-bs-target="#modalJustificacao@(pedido.ID_Pedido)">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </button>
+
+                                                    <!-- Modal Justificação -->
+                                                    <div class="modal fade" id="modalJustificacao@(pedido.ID_Pedido)" tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Justificação</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p>@pedido.Justificacao</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @pedido.Data_Pedido.ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @if (pedido.Estado == "Pendente")
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-clock"></i> Pendente
+                                                    </span>
+                                                }
+                                                else if (pedido.Estado == "Aprovado")
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Aprovado
+                                                    </span>
+                                                    @if (pedido.Data_Resposta.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">@pedido.Data_Resposta.Value.ToString("dd/MM/yyyy")</small>
+                                                    }
+                                                }
+                                                else if (pedido.Estado == "Rejeitado")
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-circle"></i> Rejeitado
+                                                    </span>
+                                                    @if (pedido.Data_Resposta.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">@pedido.Data_Resposta.Value.ToString("dd/MM/yyyy")</small>
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (pedido.Estado == "Pendente")
+                                                {
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm btn-success"
+                                                                data-bs-toggle="modal" data-bs-target="#modalAprovar@(pedido.ID_Pedido)">
+                                                            <i class="bi bi-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-danger"
+                                                                data-bs-toggle="modal" data-bs-target="#modalRejeitar@(pedido.ID_Pedido)">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Modal Aprovar -->
+                                                    <div class="modal fade" id="modalAprovar@(pedido.ID_Pedido)" tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form asp-action="AprovarPromocao" method="post">
+                                                                    <input type="hidden" name="id" value="@pedido.ID_Pedido" />
+                                                                    <div class="modal-header bg-success text-white">
+                                                                        <h5 class="modal-title">Aprovar Promoção</h5>
+                                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p><strong>Tem certeza que deseja aprovar este pedido?</strong></p>
+                                                                        <p>O utilizador <strong>@pedido.NomeUtilizador</strong> será promovido a Administrador.</p>
+
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Observações (opcional)</label>
+                                                                            <textarea name="observacoes" class="form-control" rows="3"
+                                                                                      placeholder="Adicione observações se necessário..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                        <button type="submit" class="btn btn-success">
+                                                                            <i class="bi bi-check-circle"></i> Aprovar
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Modal Rejeitar -->
+                                                    <div class="modal fade" id="modalRejeitar@(pedido.ID_Pedido)" tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form asp-action="RejeitarPromocao" method="post">
+                                                                    <input type="hidden" name="id" value="@pedido.ID_Pedido" />
+                                                                    <div class="modal-header bg-danger text-white">
+                                                                        <h5 class="modal-title">Rejeitar Promoção</h5>
+                                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p><strong>Tem certeza que deseja rejeitar este pedido?</strong></p>
+                                                                        <p>O utilizador <strong>@pedido.NomeUtilizador</strong> será notificado.</p>
+
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Motivo da rejeição (opcional)</label>
+                                                                            <textarea name="observacoes" class="form-control" rows="3"
+                                                                                      placeholder="Explique o motivo da rejeição..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                        <button type="submit" class="btn btn-danger">
+                                                                            <i class="bi bi-x-circle"></i> Rejeitar
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                    @if (!string.IsNullOrEmpty(pedido.NomeAdminResposta))
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">por @pedido.NomeAdminResposta</small>
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Nenhum pedido encontrado.</strong>
+            <p class="mb-0 mt-2">Não existem pedidos de promoção com o filtro selecionado.</p>
+        </div>
+    }
+</div>

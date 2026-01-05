@@ -1,0 +1,64 @@
+@model PedidoPromocaoViewModel
+
+@{
+    ViewData["Title"] = "Solicitar Promoção a Administrador";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-shield-check"></i> Solicitar Promoção a Administrador</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Informação:</strong>
+                        <p class="mb-0 mt-2">
+                            Ao solicitar a promoção a Administrador, terá acesso a funcionalidades adicionais de gestão da plataforma.
+                            O seu pedido será analisado por um administrador antes de ser aprovado.
+                        </p>
+                    </div>
+
+                    <form asp-action="SolicitarPromocao" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="Justificacao" class="form-label fw-bold">
+                                Por que pretende ser promovido a Administrador?
+                            </label>
+                            <textarea asp-for="Justificacao"
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Descreva a sua motivação e experiência relevante..."
+                                      required></textarea>
+                            <span asp-validation-for="Justificacao" class="text-danger"></span>
+                            <small class="form-text text-muted">Máximo 500 caracteres</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Enviar Pedido
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <small class="text-muted">
+                    <i class="bi bi-clock"></i> O seu pedido será analisado em breve.
+                    Receberá uma notificação quando for processado.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

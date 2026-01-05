@@ -1,0 +1,77 @@
+@model List<ReservaViewModel>
+
+@{
+    ViewData["Title"] = "Minhas Reservas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar-check"></i> Minhas Reservas</h2>
+        <a asp-action="Search" class="btn btn-primary">
+            <i class="bi bi-search"></i> Procurar Veículos
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var reserva in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(reserva.FotoPrincipal))
+                        {
+                            <img src="@reserva.FotoPrincipal" class="card-img-top" alt="@reserva.Titulo" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@reserva.Titulo</h5>
+                            <p class="text-muted mb-2">@reserva.MarcaModelo</p>
+                            <h6 class="text-primary mb-3">@reserva.Preco.ToString("C")</h6>
+                            <p class="mb-2"><i class="bi bi-geo-alt"></i> @reserva.Localizacao</p>
+
+                            @{
+                                var corBadge = reserva.DiasRestantes > 3 ? "bg-success" : (reserva.DiasRestantes > 1 ? "bg-warning" : "bg-danger");
+                            }
+
+                            <div class="mb-3">
+                                <span class="badge @corBadge">
+                                    <i class="bi bi-clock"></i> @reserva.DiasRestantes dia(s) restante(s)
+                                </span>
+                            </div>
+
+                            <small class="text-muted d-block mb-3">
+                                Expira em: @reserva.Data_Fim.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+
+                            <div class="d-grid gap-2">
+                                <a asp-action="AnuncioDetails" asp-route-id="@reserva.ID_Anuncio" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver Detalhes
+                                </a>
+                                <form asp-action="CancelarReserva" asp-route-id="@reserva.ID_Anuncio" method="post" onsubmit="return confirm('Tem a certeza que pretende cancelar esta reserva?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger w-100">
+                                        <i class="bi bi-x-circle"></i> Cancelar Reserva
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Sem Reservas</strong>: Ainda não tem veículos reservados.
+            <a asp-action="Search" class="alert-link">Procure agora!</a>
+        </div>
+    }
+</div>

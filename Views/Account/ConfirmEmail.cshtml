@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Confirmação de Email";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow text-center">
+                <div class="card-body p-5">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <h2 class="mt-3 text-success">Email Confirmado!</h2>
+                        <p class="lead">@TempData["SuccessMessage"]</p>
+                        <a asp-action="Login" class="btn btn-success btn-lg mt-3">
+                            <i class="bi bi-box-arrow-in-right"></i> Fazer Login
+                        </a>
+                    }
+                    else if (TempData["ErrorMessage"] != null)
+                    {
+                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+                        <h2 class="mt-3 text-danger">Erro</h2>
+                        <p class="lead">@TempData["ErrorMessage"]</p>
+                        <a asp-action="ResendConfirmationEmail" class="btn btn-primary mt-3">
+                            <i class="bi bi-envelope"></i> Reenviar Email de Confirmação
+                        </a>
+                        <a asp-action="Login" class="btn btn-outline-secondary mt-3">
+                            <i class="bi bi-arrow-left"></i> Voltar ao Login
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

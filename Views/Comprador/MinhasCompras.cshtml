@@ -1,0 +1,98 @@
+@model List<CompraViewModel>
+
+@{
+    ViewData["Title"] = "Minhas Compras";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-bag-check"></i> Minhas Compras</h2>
+        <a asp-action="Search" class="btn btn-primary">
+            <i class="bi bi-search"></i> Procurar Veículos
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var compra in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(compra.FotoPrincipal))
+                        {
+                            <img src="@compra.FotoPrincipal" class="card-img-top" alt="@compra.Titulo" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@compra.Titulo</h5>
+                            <p class="text-muted mb-2">@compra.MarcaModelo</p>
+                            <h6 class="text-primary mb-3">@compra.Preco.ToString("C")</h6>
+
+                            <p class="mb-2">
+                                <i class="bi bi-calendar"></i> @compra.Data.ToString("dd/MM/yyyy")
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-credit-card"></i> @compra.Metodo_Pagamento
+                            </p>
+
+                            @{
+                                var estadoBadgeClass = compra.Estado_Pagamento == "Pago" ? "bg-success" :
+                                                       compra.Estado_Pagamento == "Pendente" ? "bg-warning text-dark" : "bg-secondary";
+                            }
+                            <span class="badge @estadoBadgeClass mb-3">@compra.Estado_Pagamento</span>
+
+                            @if (!string.IsNullOrEmpty(compra.Notas))
+                            {
+                                <p class="mb-2 text-muted"><small><i class="bi bi-chat-left-text"></i> @compra.Notas</small></p>
+                            }
+
+                            <hr />
+
+                            <p class="small mb-2"><strong>Vendedor:</strong></p>
+                            <p class="small mb-1">@compra.VendedorNome</p>
+                            <p class="small mb-1 text-muted">@compra.VendedorEmail</p>
+                            <p class="small mb-3 text-muted">@compra.VendedorContacto</p>
+
+                            <div class="d-grid gap-2">
+                                <a asp-action="OrderConfirmation" asp-route-id="@compra.ID_Compra" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver Detalhes
+                                </a>
+
+                                @if (compra.Estado_Pagamento == "Pendente")
+                                {
+                                    <form asp-action="SimulatePayment" asp-route-id="@compra.ID_Compra" method="post" class="mb-1">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-warning w-100">
+                                            <i class="bi bi-lightning"></i> Simular Pagamento
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="CancelarCompra" asp-route-id="@compra.ID_Compra" method="post" onsubmit="return confirm('Tem a certeza que pretende cancelar esta compra?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger w-100">
+                                            <i class="bi bi-x-circle"></i> Cancelar Compra
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Sem Compras</strong>: Ainda não efetuou nenhuma compra.
+            <a asp-action="Search" class="alert-link">Procure veículos agora!</a>
+        </div>
+    }
+</div>

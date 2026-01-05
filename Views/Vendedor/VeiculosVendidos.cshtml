@@ -1,0 +1,115 @@
+@model List<CompraViewModel>
+
+@{
+    ViewData["Title"] = "Veículos Vendidos";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cash-coin"></i> Veículos Vendidos</h2>
+        <a asp-action="MeusAnuncios" class="btn btn-primary">
+            <i class="bi bi-list"></i> Meus Anúncios
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>@Model.Count</h3>
+                        <p class="mb-0">Total de Vendas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>@Model.Sum(c => c.Preco).ToString("C")</h3>
+                        <p class="mb-0">Valor Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3>@Model.Count(c => c.Estado_Pagamento == "Pendente")</h3>
+                        <p class="mb-0">Pagamentos Pendentes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Foto</th>
+                        <th>Veículo</th>
+                        <th>Preço</th>
+                        <th>Comprador</th>
+                        <th>Contacto</th>
+                        <th>Data</th>
+                        <th>Método de Pagamento</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var venda in Model.OrderByDescending(v => v.Data))
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(venda.FotoPrincipal))
+                                {
+                                    <img src="@venda.FotoPrincipal" alt="@venda.Titulo" style="width: 80px; height: 60px; object-fit: cover;" class="rounded">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="width: 80px; height: 60px;">
+                                        <i class="bi bi-car-front"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <strong>@venda.Titulo</strong><br />
+                                <small class="text-muted">@venda.MarcaModelo</small>
+                            </td>
+                            <td><strong class="text-success">@venda.Preco.ToString("C")</strong></td>
+                            <td>
+                                <strong>@venda.CompradorNome</strong><br />
+                                <small class="text-muted">@venda.CompradorEmail</small>
+                            </td>
+                            <td>@venda.CompradorContacto</td>
+                            <td>@venda.Data.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <small>@venda.Metodo_Pagamento</small>
+                            </td>
+                            <td>
+                                @{
+                                    var estadoBadgeClass = venda.Estado_Pagamento == "Pago" ? "bg-success" :
+                                                           venda.Estado_Pagamento == "Pendente" ? "bg-warning text-dark" : "bg-secondary";
+                                }
+                                <span class="badge @estadoBadgeClass">@venda.Estado_Pagamento</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle"></i>
+            <strong>Nota:</strong> Entre em contacto com os compradores para coordenar a entrega dos veículos.
+            Os veículos com pagamento pendente ainda aguardam confirmação.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Sem Vendas:</strong> Ainda não vendeu nenhum veículo.
+            <a asp-action="MeusAnuncios" class="alert-link">Veja os seus anúncios.</a>
+        </div>
+    }
+</div>

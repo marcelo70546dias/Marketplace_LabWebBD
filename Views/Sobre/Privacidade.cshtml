@@ -1,0 +1,99 @@
+@model Marketplace_LabWebBD.Models.Configuracao_Sistema
+
+@{
+    ViewData["Title"] = "Política de Privacidade";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="bi bi-shield-lock"></i> Política de Privacidade
+                </h1>
+                <p class="lead text-muted">Última atualização: @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    @if (!string.IsNullOrEmpty(Model?.Politica_Privacidade))
+                    {
+                        <div style="white-space: pre-line;">@Model.Politica_Privacidade</div>
+                    }
+                    else
+                    {
+                        <h3>1. Introdução</h3>
+                        <p>A privacidade dos nossos utilizadores é extremamente importante para nós. Esta política descreve como recolhemos, utilizamos e protegemos as suas informações pessoais.</p>
+
+                        <h3 class="mt-4">2. Informações que Recolhemos</h3>
+                        <p>Recolhemos as seguintes informações:</p>
+                        <ul>
+                            <li><strong>Informações de Registo:</strong> Nome, email, telefone, morada</li>
+                            <li><strong>Informações de Anúncios:</strong> Detalhes dos veículos, fotografias, descrições</li>
+                            <li><strong>Informações de Navegação:</strong> Endereço IP, tipo de navegador, páginas visitadas</li>
+                            <li><strong>Cookies:</strong> Utilizamos cookies para melhorar a experiência do utilizador</li>
+                        </ul>
+
+                        <h3 class="mt-4">3. Como Utilizamos as Informações</h3>
+                        <p>As suas informações são utilizadas para:</p>
+                        <ul>
+                            <li>Criar e gerir a sua conta</li>
+                            <li>Publicar e gerir anúncios</li>
+                            <li>Facilitar a comunicação entre compradores e vendedores</li>
+                            <li>Melhorar os nossos serviços</li>
+                            <li>Enviar notificações e atualizações importantes</li>
+                            <li>Prevenir fraudes e atividades ilícitas</li>
+                        </ul>
+
+                        <h3 class="mt-4">4. Partilha de Informações</h3>
+                        <p>Não vendemos as suas informações pessoais a terceiros. Podemos partilhar informações apenas nos seguintes casos:</p>
+                        <ul>
+                            <li>Com o seu consentimento explícito</li>
+                            <li>Para cumprir obrigações legais</li>
+                            <li>Para proteger os direitos e segurança da plataforma e dos utilizadores</li>
+                            <li>Com prestadores de serviços que nos ajudam a operar a plataforma</li>
+                        </ul>
+
+                        <h3 class="mt-4">5. Segurança dos Dados</h3>
+                        <p>Implementamos medidas de segurança técnicas e organizacionais para proteger as suas informações contra acesso não autorizado, alteração, divulgação ou destruição.</p>
+
+                        <h3 class="mt-4">6. Os Seus Direitos (RGPD)</h3>
+                        <p>De acordo com o Regulamento Geral de Proteção de Dados (RGPD), tem os seguintes direitos:</p>
+                        <ul>
+                            <li><strong>Direito de Acesso:</strong> Pode solicitar uma cópia dos seus dados pessoais</li>
+                            <li><strong>Direito de Retificação:</strong> Pode corrigir dados incorretos</li>
+                            <li><strong>Direito ao Apagamento:</strong> Pode solicitar a eliminação dos seus dados</li>
+                            <li><strong>Direito à Portabilidade:</strong> Pode solicitar os seus dados num formato estruturado</li>
+                            <li><strong>Direito de Oposição:</strong> Pode opor-se ao processamento dos seus dados</li>
+                        </ul>
+
+                        <h3 class="mt-4">7. Cookies</h3>
+                        <p>Utilizamos cookies para:</p>
+                        <ul>
+                            <li>Manter a sessão do utilizador</li>
+                            <li>Lembrar preferências</li>
+                            <li>Analisar o tráfego do site</li>
+                            <li>Personalizar conteúdo</li>
+                        </ul>
+                        <p>Pode desativar os cookies nas configurações do seu navegador, mas isso pode afetar a funcionalidade do site.</p>
+
+                        <h3 class="mt-4">8. Retenção de Dados</h3>
+                        <p>Mantemos os seus dados pessoais apenas pelo tempo necessário para cumprir as finalidades descritas nesta política ou conforme exigido por lei.</p>
+
+                        <h3 class="mt-4">9. Alterações a Esta Política</h3>
+                        <p>Podemos atualizar esta política periodicamente. Notificaremos sobre alterações significativas através do email registado ou de um aviso na plataforma.</p>
+
+                        <h3 class="mt-4">10. Contacto</h3>
+                        <p>Para exercer os seus direitos ou esclarecer dúvidas sobre esta política, contacte-nos através da <a asp-controller="Sobre" asp-action="Contactos">página de contactos</a>.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Início
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

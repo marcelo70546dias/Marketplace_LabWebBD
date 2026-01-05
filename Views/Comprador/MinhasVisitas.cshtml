@@ -1,0 +1,171 @@
+@model List<VisitaViewModel>
+
+@{
+    ViewData["Title"] = "Minhas Visitas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar-event"></i> Minhas Visitas</h2>
+        <a asp-action="Search" class="btn btn-primary">
+            <i class="bi bi-search"></i> Procurar Veículos
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Tabs para filtrar por estado -->
+        <ul class="nav nav-tabs mb-4" id="visitasTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes" type="button" role="tab">
+                    Pendentes (@Model.Count(v => v.Estado == "Pendente"))
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="realizadas-tab" data-bs-toggle="tab" data-bs-target="#realizadas" type="button" role="tab">
+                    Realizadas (@Model.Count(v => v.Estado == "Realizada"))
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="canceladas-tab" data-bs-toggle="tab" data-bs-target="#canceladas" type="button" role="tab">
+                    Canceladas (@Model.Count(v => v.Estado == "Cancelada"))
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="visitasTabContent">
+            <!-- Tab Pendentes -->
+            <div class="tab-pane fade show active" id="pendentes" role="tabpanel">
+                <div class="row">
+                    @foreach (var visita in Model.Where(v => v.Estado == "Pendente").OrderBy(v => v.Data_Hora))
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm border-info">
+                                @if (!string.IsNullOrEmpty(visita.FotoPrincipal))
+                                {
+                                    <img src="@visita.FotoPrincipal" class="card-img-top" alt="@visita.Titulo" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="bi bi-car-front" style="font-size: 3rem;"></i>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title">@visita.Titulo</h5>
+                                    <p class="text-muted mb-2">@visita.MarcaModelo</p>
+                                    <h6 class="text-primary mb-3">@visita.Preco.ToString("C")</h6>
+
+                                    <p class="mb-2"><i class="bi bi-calendar-event text-info"></i> @visita.Data_Hora.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <p class="mb-2"><i class="bi bi-geo-alt text-danger"></i> @visita.Localizacao</p>
+
+                                    @if (!string.IsNullOrEmpty(visita.Observacoes))
+                                    {
+                                        <p class="mb-2 text-muted"><small><i class="bi bi-chat-left-text"></i> @visita.Observacoes</small></p>
+                                    }
+
+                                    <span class="badge bg-warning text-dark mb-3">Pendente</span>
+
+                                    <div class="d-grid gap-2">
+                                        <a asp-action="AnuncioDetails" asp-route-id="@visita.ID_Anuncio" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver Anúncio
+                                        </a>
+                                        <form asp-action="CancelarVisita" asp-route-id="@visita.ID_Visita" method="post" onsubmit="return confirm('Tem a certeza que pretende cancelar esta visita?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger w-100">
+                                                <i class="bi bi-x-circle"></i> Cancelar Visita
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!Model.Any(v => v.Estado == "Pendente"))
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Não tem visitas pendentes.
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Tab Realizadas -->
+            <div class="tab-pane fade" id="realizadas" role="tabpanel">
+                <div class="row">
+                    @foreach (var visita in Model.Where(v => v.Estado == "Realizada").OrderByDescending(v => v.Data_Hora))
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @if (!string.IsNullOrEmpty(visita.FotoPrincipal))
+                                {
+                                    <img src="@visita.FotoPrincipal" class="card-img-top" alt="@visita.Titulo" style="height: 200px; object-fit: cover;">
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title">@visita.Titulo</h5>
+                                    <p class="text-muted mb-2">@visita.MarcaModelo</p>
+                                    <p class="mb-2"><i class="bi bi-calendar-event"></i> @visita.Data_Hora.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <span class="badge bg-success mb-3">Realizada</span>
+                                    <div class="d-grid">
+                                        <a asp-action="AnuncioDetails" asp-route-id="@visita.ID_Anuncio" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver Anúncio
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!Model.Any(v => v.Estado == "Realizada"))
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Não tem visitas realizadas.
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Tab Canceladas -->
+            <div class="tab-pane fade" id="canceladas" role="tabpanel">
+                <div class="row">
+                    @foreach (var visita in Model.Where(v => v.Estado == "Cancelada").OrderByDescending(v => v.Data_Hora))
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @if (!string.IsNullOrEmpty(visita.FotoPrincipal))
+                                {
+                                    <img src="@visita.FotoPrincipal" class="card-img-top" alt="@visita.Titulo" style="height: 200px; object-fit: cover;">
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title">@visita.Titulo</h5>
+                                    <p class="text-muted mb-2">@visita.MarcaModelo</p>
+                                    <p class="mb-2"><i class="bi bi-calendar-event"></i> @visita.Data_Hora.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <span class="badge bg-secondary mb-3">Cancelada</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!Model.Any(v => v.Estado == "Cancelada"))
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Não tem visitas canceladas.
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Sem Visitas</strong>: Ainda não agendou nenhuma visita.
+            <a asp-action="Search" class="alert-link">Procure veículos agora!</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Criar Conta - MyOnlineStand";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="text-center mb-5">
+                <h1 class="display-4"><i class="bi bi-person-plus-fill"></i> Criar Conta no MyOnlineStand</h1>
+                <p class="lead text-muted">Escolha o tipo de conta que pretende criar</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Comprador Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-person-fill text-primary" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="card-title">Comprador</h4>
+                            <p class="card-text text-muted mb-4">
+                                Encontre o carro dos seus sonhos
+                            </p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Pesquisar anúncios</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Marcas favoritas</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Notificações personalizadas</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Histórico de visitas</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white border-0 p-3">
+                            <a asp-action="RegisterBuyer" class="btn btn-primary w-100 btn-lg">
+                                <i class="bi bi-arrow-right-circle"></i> Registar como Comprador
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendedor Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-shop text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="card-title">Vendedor</h4>
+                            <p class="card-text text-muted mb-4">
+                                Venda os seus carros online
+                            </p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Criar anúncios</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gerir inventário</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Estatísticas de vendas</li>
+                                <li class="mb-2"><i class="bi bi-info-circle text-warning"></i> Requer aprovação</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white border-0 p-3">
+                            <a asp-action="RegisterSeller" class="btn btn-success w-100 btn-lg">
+                                <i class="bi bi-arrow-right-circle"></i> Registar como Vendedor
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Card -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-shield-fill-check text-warning" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="card-title">Administrador</h4>
+                            <p class="card-text text-muted mb-4">
+                                Gerir a plataforma
+                            </p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Aprovar vendedores</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gerir utilizadores</li>
+                                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Moderar conteúdo</li>
+                                <li class="mb-2"><i class="bi bi-exclamation-circle text-danger"></i> Requer aprovação</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white border-0 p-3">
+                            <button class="btn btn-warning w-100 btn-lg" disabled>
+                                <i class="bi bi-lock-fill"></i> Contactar Admin Existente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <p class="text-muted">
+                    Já tem conta?
+                    <a asp-action="Login" class="fw-bold text-decoration-none">
+                        <i class="bi bi-box-arrow-in-right"></i> Fazer Login
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    }
+</style>

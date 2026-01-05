@@ -1,0 +1,169 @@
+@model List<AnuncioViewModel>
+
+@{
+    ViewData["Title"] = "Meus Anúncios";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-car-front"></i> Meus Anúncios</h2>
+                <p class="text-muted mb-0">Gerir os seus anúncios de veículos</p>
+            </div>
+            <div>
+                <a asp-action="CreateAnuncio" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Criar Novo Anúncio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var anuncio in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        @if (!string.IsNullOrEmpty(anuncio.FotoPrincipal))
+                        {
+                            <img src="@anuncio.FotoPrincipal" class="card-img-top" alt="@anuncio.Titulo" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-car-front text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">@anuncio.Titulo</h5>
+                                @switch (anuncio.Estado_Anuncio)
+                                {
+                                    case "Ativo":
+                                        <span class="badge bg-success">Ativo</span>
+                                        break;
+                                    case "Pausado":
+                                        <span class="badge bg-warning text-dark">Pausado</span>
+                                        break;
+                                    case "Reservado":
+                                        <span class="badge bg-info">Reservado</span>
+                                        break;
+                                    case "Vendido":
+                                        <span class="badge bg-primary">Vendido</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@anuncio.Estado_Anuncio</span>
+                                        break;
+                                }
+                            </div>
+
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-tag"></i> @anuncio.MarcaNome @anuncio.ModeloNome
+                            </p>
+
+                            <h4 class="text-primary mb-2">€@anuncio.Preco.ToString("N2")</h4>
+
+                            <p class="card-text small mb-2">
+                                <i class="bi bi-geo-alt"></i> @anuncio.Localizacao<br>
+                                <i class="bi bi-calendar"></i> @anuncio.Ano |
+                                <i class="bi bi-speedometer2"></i> @anuncio.Quilometragem.ToString("N0") km
+                            </p>
+
+                            @if (anuncio.Estado_Anuncio == "Reservado" && anuncio.Reservado_Ate.HasValue)
+                            {
+                                var diasRestantes = (anuncio.Reservado_Ate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Now).Days;
+                                <div class="alert alert-info alert-sm mb-2">
+                                    <small>
+                                        <strong>Reservado por:</strong> @anuncio.NomeComprador<br>
+                                        <strong>Expira em:</strong> @diasRestantes dia(s)
+                                    </small>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-white">
+                            <div class="btn-group w-100" role="group">
+                                @if (anuncio.Estado_Anuncio == "Ativo" || anuncio.Estado_Anuncio == "Pausado")
+                                {
+                                    <a asp-action="EditAnuncio" asp-route-id="@anuncio.ID_Anuncio"
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    @if (anuncio.Estado_Anuncio == "Ativo")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                                onclick="changeEstado(@anuncio.ID_Anuncio, 'Pausado')" title="Pausar">
+                                            <i class="bi bi-pause"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                onclick="changeEstado(@anuncio.ID_Anuncio, 'Ativo')" title="Ativar">
+                                            <i class="bi bi-play"></i>
+                                        </button>
+                                    }
+
+                                    <form asp-action="DeleteAnuncio" asp-route-id="@anuncio.ID_Anuncio"
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Tem certeza que deseja eliminar este anúncio?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-secondary w-100" disabled>
+                                        Não editável (@anuncio.Estado_Anuncio)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            Ainda não tem anúncios criados.
+            <a asp-action="CreateAnuncio" class="alert-link">Crie o seu primeiro anúncio</a> agora!
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function changeEstado(anuncioId, novoEstado) {
+            if (confirm(`Tem certeza que deseja ${novoEstado === 'Ativo' ? 'ativar' : 'pausar'} este anúncio?`)) {
+                fetch('@Url.Action("ChangeEstado")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: anuncioId, estado: novoEstado })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Erro ao alterar estado do anúncio');
+                    console.error('Error:', error);
+                });
+            }
+        }
+    </script>
+}

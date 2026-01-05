@@ -1,0 +1,70 @@
+@model CompleteVendedorProfileViewModel
+
+@{
+    ViewData["Title"] = "Completar Perfil de Vendedor";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="bi bi-person-badge"></i> Completar Perfil de Vendedor</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Bem-vindo!</strong> O seu pedido foi aprovado. Complete o seu perfil para começar a vender.
+                    </div>
+
+                    <form asp-action="CompleteProfile" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Tipo" class="form-label"></label>
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" asp-for="Tipo" value="Particular" id="tipoParticular" required />
+                                    <label class="form-check-label" for="tipoParticular">
+                                        <i class="bi bi-person"></i> Particular
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" asp-for="Tipo" value="Empresa" id="tipoEmpresa" required />
+                                    <label class="form-check-label" for="tipoEmpresa">
+                                        <i class="bi bi-building"></i> Empresa
+                                    </label>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NIF" class="form-label"></label>
+                            <input asp-for="NIF" class="form-control" placeholder="123456789" maxlength="9" />
+                            <span asp-validation-for="NIF" class="text-danger"></span>
+                            <small class="text-muted">Introduza 9 dígitos</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Dados_Faturacao" class="form-label"></label>
+                            <textarea asp-for="Dados_Faturacao" class="form-control" rows="3"
+                                      placeholder="Nome da empresa, morada fiscal, etc. (opcional)"></textarea>
+                            <span asp-validation-for="Dados_Faturacao" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Completar Perfil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

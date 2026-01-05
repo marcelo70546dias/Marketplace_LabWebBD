@@ -1,0 +1,350 @@
+@model SearchViewModel
+
+@{
+    ViewData["Title"] = "Pesquisar Veículos";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar de Filtros -->
+        <div class="col-lg-3 mb-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-filter"></i> Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Search" method="get">
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label asp-for="Categoria" class="form-label fw-bold"></label>
+                            <select asp-for="Categoria" asp-items="Model.CategoriasDisponiveis" class="form-select"></select>
+                        </div>
+
+                        <!-- Marca/Modelo -->
+                        <div class="mb-3">
+                            <label asp-for="ID_Marca" class="form-label fw-bold"></label>
+                            <select asp-for="ID_Marca" asp-items="Model.Marcas" class="form-select" id="marcaSelect"></select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ID_Modelo" class="form-label fw-bold"></label>
+                            <select asp-for="ID_Modelo" asp-items="Model.Modelos" class="form-select" id="modeloSelect"></select>
+                        </div>
+
+                        <!-- Preço -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Preço (€)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input asp-for="Preco_Min" class="form-control" placeholder="Mín" />
+                                </div>
+                                <div class="col-6">
+                                    <input asp-for="Preco_Max" class="form-control" placeholder="Máx" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ano -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ano</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input asp-for="Ano_Min" class="form-control" placeholder="Mín" />
+                                </div>
+                                <div class="col-6">
+                                    <input asp-for="Ano_Max" class="form-control" placeholder="Máx" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quilometragem -->
+                        <div class="mb-3">
+                            <label asp-for="Quilometragem_Max" class="form-label fw-bold"></label>
+                            <input asp-for="Quilometragem_Max" class="form-control" placeholder="Ex: 100000" />
+                        </div>
+
+                        <!-- Combustível -->
+                        <div class="mb-3">
+                            <label asp-for="ID_Combustivel" class="form-label fw-bold"></label>
+                            <select asp-for="ID_Combustivel" asp-items="Model.Combustiveis" class="form-select"></select>
+                        </div>
+
+                        <!-- Caixa -->
+                        <div class="mb-3">
+                            <label asp-for="Caixa" class="form-label fw-bold"></label>
+                            <select asp-for="Caixa" asp-items="Model.CaixasDisponiveis" class="form-select"></select>
+                        </div>
+
+                        <!-- Distrito -->
+                        <div class="mb-3">
+                            <label asp-for="Distrito" class="form-label fw-bold"></label>
+                            <select asp-for="Distrito" asp-items="Model.DistritosDisponiveis" class="form-select"></select>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Aplicar Filtros
+                            </button>
+                            <a asp-action="Search" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Limpar Filtros
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="col-lg-9">
+            <!-- Header dos Resultados -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h4>
+                        @if (Model.TotalResultados > 0)
+                        {
+                            <text>@Model.TotalResultados veículo@(Model.TotalResultados != 1 ? "s" : "") encontrado@(Model.TotalResultados != 1 ? "s" : "")</text>
+                        }
+                        else
+                        {
+                            <text>Nenhum veículo encontrado</text>
+                        }
+                    </h4>
+                    @if (Model.HasFilters())
+                    {
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-funnel"></i> @Model.GetFilterSummary()
+                        </p>
+                    }
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <form asp-action="Search" method="get" class="d-inline">
+                        <!-- Preserve all existing filters as hidden fields -->
+                        @if (!string.IsNullOrEmpty(Model.Categoria))
+                        {
+                            <input type="hidden" name="Categoria" value="@Model.Categoria" />
+                        }
+                        @if (Model.ID_Marca.HasValue)
+                        {
+                            <input type="hidden" name="ID_Marca" value="@Model.ID_Marca" />
+                        }
+                        @if (Model.ID_Modelo.HasValue)
+                        {
+                            <input type="hidden" name="ID_Modelo" value="@Model.ID_Modelo" />
+                        }
+                        @if (Model.Preco_Min.HasValue)
+                        {
+                            <input type="hidden" name="Preco_Min" value="@Model.Preco_Min" />
+                        }
+                        @if (Model.Preco_Max.HasValue)
+                        {
+                            <input type="hidden" name="Preco_Max" value="@Model.Preco_Max" />
+                        }
+                        @if (Model.Ano_Min.HasValue)
+                        {
+                            <input type="hidden" name="Ano_Min" value="@Model.Ano_Min" />
+                        }
+                        @if (Model.Ano_Max.HasValue)
+                        {
+                            <input type="hidden" name="Ano_Max" value="@Model.Ano_Max" />
+                        }
+                        @if (Model.Quilometragem_Max.HasValue)
+                        {
+                            <input type="hidden" name="Quilometragem_Max" value="@Model.Quilometragem_Max" />
+                        }
+                        @if (Model.ID_Combustivel.HasValue)
+                        {
+                            <input type="hidden" name="ID_Combustivel" value="@Model.ID_Combustivel" />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Caixa))
+                        {
+                            <input type="hidden" name="Caixa" value="@Model.Caixa" />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Distrito))
+                        {
+                            <input type="hidden" name="Distrito" value="@Model.Distrito" />
+                        }
+
+                        <label class="me-2">Ordenar:</label>
+                        <select name="SortBy" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                            @foreach (var option in Model.OpcoesOrdenacao)
+                            {
+                                <option value="@option.Value" selected="@(option.Value == Model.SortBy)">@option.Text</option>
+                            }
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Grid de Resultados -->
+            @if (Model.Resultados.Any())
+            {
+                <div class="row">
+                    @foreach (var anuncio in Model.Resultados)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 hover-card">
+                                @if (!string.IsNullOrEmpty(anuncio.FotoPrincipal))
+                                {
+                                    <img src="@anuncio.FotoPrincipal" class="card-img-top" alt="@anuncio.Titulo" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="bi bi-car-front text-white" style="font-size: 3rem;"></i>
+                                    </div>
+                                }
+
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">@anuncio.Titulo</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-tag"></i> @anuncio.MarcaNome @anuncio.ModeloNome
+                                    </p>
+
+                                    <h4 class="text-primary mb-3">€@anuncio.Preco.ToString("N0")</h4>
+
+                                    <div class="row text-muted small mb-3">
+                                        <div class="col-6">
+                                            <i class="bi bi-calendar"></i> @anuncio.Ano
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="bi bi-speedometer2"></i> @anuncio.Quilometragem.ToString("N0") km
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="bi bi-fuel-pump"></i> @anuncio.CombustivelTipo
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="bi bi-geo-alt"></i> @anuncio.Localizacao
+                                        </div>
+                                    </div>
+
+                                    <a asp-action="AnuncioDetails" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-primary w-100">
+                                        <i class="bi bi-eye"></i> Ver Detalhes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Paginação -->
+                @if (Model.TotalPaginas > 1)
+                {
+                    <nav aria-label="Paginação">
+                        <ul class="pagination justify-content-center">
+                            @{
+                                var baseUrl = $"?page={{0}}" +
+                                    (!string.IsNullOrEmpty(Model.Categoria) ? $"&Categoria={Model.Categoria}" : "") +
+                                    (Model.ID_Marca.HasValue ? $"&ID_Marca={Model.ID_Marca}" : "") +
+                                    (Model.ID_Modelo.HasValue ? $"&ID_Modelo={Model.ID_Modelo}" : "") +
+                                    (Model.Preco_Min.HasValue ? $"&Preco_Min={Model.Preco_Min}" : "") +
+                                    (Model.Preco_Max.HasValue ? $"&Preco_Max={Model.Preco_Max}" : "") +
+                                    (Model.Ano_Min.HasValue ? $"&Ano_Min={Model.Ano_Min}" : "") +
+                                    (Model.Ano_Max.HasValue ? $"&Ano_Max={Model.Ano_Max}" : "") +
+                                    (Model.Quilometragem_Max.HasValue ? $"&Quilometragem_Max={Model.Quilometragem_Max}" : "") +
+                                    (Model.ID_Combustivel.HasValue ? $"&ID_Combustivel={Model.ID_Combustivel}" : "") +
+                                    (!string.IsNullOrEmpty(Model.Caixa) ? $"&Caixa={Model.Caixa}" : "") +
+                                    (!string.IsNullOrEmpty(Model.Distrito) ? $"&Distrito={Model.Distrito}" : "") +
+                                    (!string.IsNullOrEmpty(Model.SortBy) ? $"&SortBy={Model.SortBy}" : "");
+                            }
+
+                            <!-- Primeira página -->
+                            <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@string.Format(baseUrl, 1)">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Anterior -->
+                            <li class="page-item @(Model.PaginaAtual == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@string.Format(baseUrl, Model.PaginaAtual - 1)">
+                                    Anterior
+                                </a>
+                            </li>
+
+                            <!-- Números de página -->
+                            @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link" href="@string.Format(baseUrl, i)">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Próxima -->
+                            <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link" href="@string.Format(baseUrl, Model.PaginaAtual + 1)">
+                                    Próxima
+                                </a>
+                            </li>
+
+                            <!-- Última página -->
+                            <li class="page-item @(Model.PaginaAtual == Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link" href="@string.Format(baseUrl, Model.TotalPaginas)">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Nenhum veículo encontrado.</strong>
+                    <p class="mb-0 mt-2">Tente ajustar os seus filtros de pesquisa.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Cascading dropdown: Marca → Modelo
+        $(document).ready(function() {
+            var initialModeloId = @(Model.ID_Modelo?.ToString() ?? "null");
+
+            $('#marcaSelect').change(function() {
+                var marcaId = $(this).val();
+                var modeloSelect = $('#modeloSelect');
+
+                modeloSelect.empty();
+                modeloSelect.append('<option value="">Carregando modelos...</option>');
+
+                if (marcaId) {
+                    $.getJSON('@Url.Action("GetModelosByMarca")', { marcaId: marcaId }, function(data) {
+                        modeloSelect.empty();
+                        modeloSelect.append('<option value="">Todos os modelos</option>');
+                        $.each(data, function(index, item) {
+                            var option = $('<option></option>').val(item.value).text(item.text);
+                            if (item.value == initialModeloId) {
+                                option.prop('selected', true);
+                            }
+                            modeloSelect.append(option);
+                        });
+                    }).fail(function() {
+                        modeloSelect.empty();
+                        modeloSelect.append('<option value="">Erro ao carregar modelos</option>');
+                    });
+                } else {
+                    modeloSelect.empty();
+                    modeloSelect.append('<option value="">Selecione a marca primeiro</option>');
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,92 @@
+@model List<ReservaViewModel>
+
+@{
+    ViewData["Title"] = "Anúncios Reservados";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar-check"></i> Anúncios Reservados</h2>
+        <a asp-action="MeusAnuncios" class="btn btn-primary">
+            <i class="bi bi-list"></i> Todos os Anúncios
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Foto</th>
+                        <th>Veículo</th>
+                        <th>Preço</th>
+                        <th>Comprador</th>
+                        <th>Contacto</th>
+                        <th>Dias Restantes</th>
+                        <th>Expira em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reserva in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(reserva.FotoPrincipal))
+                                {
+                                    <img src="@reserva.FotoPrincipal" alt="@reserva.Titulo" style="width: 80px; height: 60px; object-fit: cover;" class="rounded">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="width: 80px; height: 60px;">
+                                        <i class="bi bi-car-front"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <strong>@reserva.Titulo</strong><br />
+                                <small class="text-muted">@reserva.MarcaModelo</small>
+                            </td>
+                            <td><strong class="text-primary">@reserva.Preco.ToString("C")</strong></td>
+                            <td>
+                                <strong>@reserva.CompradorNome</strong><br />
+                                <small class="text-muted">@reserva.CompradorEmail</small>
+                            </td>
+                            <td>@reserva.CompradorContacto</td>
+                            <td>
+                                @{
+                                    var corBadge = reserva.DiasRestantes > 3 ? "bg-success" : (reserva.DiasRestantes > 1 ? "bg-warning text-dark" : "bg-danger");
+                                }
+                                <span class="badge @corBadge">
+                                    <i class="bi bi-clock"></i> @reserva.DiasRestantes dia(s)
+                                </span>
+                            </td>
+                            <td>
+                                <small>@reserva.Data_Fim.ToString("dd/MM/yyyy")<br />@reserva.Data_Fim.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <a asp-action="EditAnuncio" asp-route-id="@reserva.ID_Anuncio" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle"></i>
+            <strong>Nota:</strong> Estes anúncios estão temporariamente bloqueados para outros compradores.
+            Se a reserva expirar sem que o comprador complete a compra, o anúncio ficará automaticamente disponível novamente.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Sem Reservas:</strong> Nenhum dos seus anúncios está atualmente reservado.
+        </div>
+    }
+</div>
