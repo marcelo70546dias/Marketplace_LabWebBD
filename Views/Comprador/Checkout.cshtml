@@ -5,6 +5,14 @@
 }
 
 <div class="container mt-4">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow">
@@ -12,8 +20,9 @@
                     <h3 class="mb-0"><i class="bi bi-cart-check"></i> Finalizar Compra</h3>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Checkout" asp-route-id="@Model.ID_Anuncio" method="post">
+                    <form asp-action="Checkout" method="post">
                         @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ID_Anuncio" />
 
                         <div class="mb-4">
                             <h5>Método de Pagamento</h5>
@@ -45,7 +54,7 @@
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-check-circle"></i> Confirmar Compra - @Model.Preco.ToString("C")
+                                <i class="bi bi-check-circle"></i> Confirmar Compra - @Model.Preco.ToString("N0") €
                             </button>
                             <a asp-action="AnuncioDetails" asp-route-id="@Model.ID_Anuncio" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Voltar ao Anúncio
@@ -73,7 +82,7 @@
                     <hr />
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
-                        <h4 class="text-success mb-0">@Model.Preco.ToString("C")</h4>
+                        <h4 class="text-success mb-0">@Model.Preco.ToString("N0") €</h4>
                     </div>
                 </div>
             </div>

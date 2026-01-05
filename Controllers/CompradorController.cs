@@ -18,6 +18,7 @@ namespace Marketplace_LabWebBD.Controllers
         private readonly IVisitaService _visitaService;
         private readonly ICompraService _compraService;
         private readonly IPromocaoAdminService _promocaoAdminService;
+        private readonly IFiltroFavoritoService _filtroFavoritoService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
 
@@ -28,6 +29,7 @@ namespace Marketplace_LabWebBD.Controllers
             IVisitaService visitaService,
             ICompraService compraService,
             IPromocaoAdminService promocaoAdminService,
+            IFiltroFavoritoService filtroFavoritoService,
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext context)
         {
@@ -37,6 +39,7 @@ namespace Marketplace_LabWebBD.Controllers
             _visitaService = visitaService;
             _compraService = compraService;
             _promocaoAdminService = promocaoAdminService;
+            _filtroFavoritoService = filtroFavoritoService;
             _userManager = userManager;
             _context = context;
         }
@@ -64,6 +67,9 @@ namespace Marketplace_LabWebBD.Controllers
 
             filters.Combustiveis = await _anuncioService.GetCombustiveisAsync();
             filters.Combustiveis.Insert(0, new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "", Text = "Todos os combustíveis" });
+
+            filters.Cores = _anuncioService.GetCores();
+            filters.Cores.Insert(0, new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "", Text = "Todas as cores" });
 
             // Load modelos if marca is selected
             if (filters.ID_Marca.HasValue)
@@ -94,8 +100,8 @@ namespace Marketplace_LabWebBD.Controllers
                 return RedirectToAction("Search");
             }
 
-            // Check if anuncio is active
-            if (anuncio.Estado_Anuncio != "Ativo")
+            // Check if anuncio is available (Ativo ou Reservado)
+            if (anuncio.Estado_Anuncio != "Ativo" && anuncio.Estado_Anuncio != "Reservado")
             {
                 TempData["InfoMessage"] = "Este anúncio não está mais disponível.";
                 return RedirectToAction("Search");
@@ -116,11 +122,20 @@ namespace Marketplace_LabWebBD.Controllers
         [HttpGet]
         public async Task<IActionResult> ReservarVeiculo(int id)
         {
-            var canReserve = await _reservaService.CanReserveAsync(id);
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var canReserve = await _reservaService.CanReserveAsync(id, comprador.ID_Comprador);
 
             if (!canReserve)
             {
-                TempData["ErrorMessage"] = "Este veículo não está disponível para reserva.";
+                TempData["ErrorMessage"] = "Este veículo não está disponível para reserva ou já tem um pedido de reserva pendente/aprovado.";
                 return RedirectToAction("AnuncioDetails", new { id });
             }
 
@@ -141,7 +156,7 @@ namespace Marketplace_LabWebBD.Controllers
         public async Task<IActionResult> ReservarVeiculo(int id, string confirm)
         {
             var user = await _userManager.GetUserAsync(User);
-            var comprador = _context.Compradors.FirstOrDefault(c => c.ID_Utilizador == user!.Id);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
 
             if (comprador == null)
             {
@@ -149,15 +164,15 @@ namespace Marketplace_LabWebBD.Controllers
                 return RedirectToAction("Index");
             }
 
-            var success = await _reservaService.CreateReservaAsync(id, comprador.ID_Comprador);
+            var result = await _reservaService.CreateReservaAsync(id, comprador.ID_Comprador);
 
-            if (success)
+            if (result.Success)
             {
-                TempData["SuccessMessage"] = "Veículo reservado com sucesso! A reserva expira na data indicada.";
+                TempData["SuccessMessage"] = "Pedido de reserva enviado com sucesso! O vendedor será notificado e deverá aprovar o seu pedido.";
                 return RedirectToAction("MinhasReservas");
             }
 
-            TempData["ErrorMessage"] = "Não foi possível reservar o veículo. Pode já ter sido reservado por outro utilizador.";
+            TempData["ErrorMessage"] = $"Não foi possível enviar o pedido de reserva: {result.ErrorMessage}";
             return RedirectToAction("AnuncioDetails", new { id });
         }
 
@@ -185,23 +200,16 @@ namespace Marketplace_LabWebBD.Controllers
         public async Task<IActionResult> CancelarReserva(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            var comprador = _context.Compradors.FirstOrDefault(c => c.ID_Utilizador == user!.Id);
 
-            if (comprador == null)
-            {
-                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
-                return RedirectToAction("Index");
-            }
-
-            var success = await _reservaService.CancelReservaAsync(id, comprador.ID_Comprador);
+            var success = await _reservaService.CancelReservaAsync(id, user!.Id, "Comprador");
 
             if (success)
             {
-                TempData["SuccessMessage"] = "Reserva cancelada com sucesso.";
+                TempData["SuccessMessage"] = "Reserva/pedido cancelado com sucesso.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Não foi possível cancelar a reserva.";
+                TempData["ErrorMessage"] = "Não foi possível cancelar a reserva/pedido.";
             }
 
             return RedirectToAction("MinhasReservas");
@@ -224,22 +232,46 @@ namespace Marketplace_LabWebBD.Controllers
             return View(model);
         }
 
-        // POST: /Comprador/AgendarVisita/5
+        // POST: /Comprador/AgendarVisita
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AgendarVisita(CreateVisitaViewModel model)
         {
+            // Validar data no servidor
+            if (model.Data_Hora <= DateTime.Now.AddMinutes(30))
+            {
+                ModelState.AddModelError("Data_Hora", "A data deve ser pelo menos 30 minutos no futuro.");
+            }
+
             if (!ModelState.IsValid)
             {
+                // Recarregar dados do anúncio se o modelo falhou
+                if (model.ID_Anuncio > 0)
+                {
+                    var anuncioDetails = await _visitaService.GetVisitaDetailsAsync(model.ID_Anuncio);
+                    if (anuncioDetails != null)
+                    {
+                        model.Titulo = anuncioDetails.Titulo;
+                        model.MarcaModelo = anuncioDetails.MarcaModelo;
+                        model.Preco = anuncioDetails.Preco;
+                        model.FotoPrincipal = anuncioDetails.FotoPrincipal;
+                    }
+                }
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
-            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Sessão expirada. Por favor faça login novamente.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user.Id);
 
             if (comprador == null)
             {
-                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado. Por favor contacte o suporte.";
                 return RedirectToAction("Index");
             }
 
@@ -247,11 +279,44 @@ namespace Marketplace_LabWebBD.Controllers
 
             if (success)
             {
-                TempData["SuccessMessage"] = "Visita agendada com sucesso!";
+                TempData["SuccessMessage"] = "Pedido de visita enviado com sucesso! O vendedor será notificado e deverá aprovar.";
                 return RedirectToAction("MinhasVisitas");
             }
 
-            TempData["ErrorMessage"] = "Não foi possível agendar a visita. Verifique se a data é futura.";
+            // Verificar possíveis razões de falha
+            var anuncio = await _context.Anuncios.FindAsync(model.ID_Anuncio);
+            if (anuncio == null)
+            {
+                TempData["ErrorMessage"] = "O anúncio não foi encontrado ou já não está disponível.";
+                return RedirectToAction("Search");
+            }
+
+            if (anuncio.Estado_Anuncio == "Vendido")
+            {
+                TempData["ErrorMessage"] = "Este veículo já foi vendido.";
+                return RedirectToAction("Search");
+            }
+
+            if (anuncio.Estado_Anuncio != "Ativo" && anuncio.Estado_Anuncio != "Reservado")
+            {
+                TempData["ErrorMessage"] = $"Este veículo não está disponível para visitas (estado: {anuncio.Estado_Anuncio}).";
+                return RedirectToAction("Search");
+            }
+
+            // Verificar se já tem visita pendente ou confirmada
+            var visitaExistente = await _context.Visita
+                .AnyAsync(v => v.ID_Comprador == comprador.ID_Comprador
+                          && v.ID_Anuncio == model.ID_Anuncio
+                          && (v.Estado == "Pendente" || v.Estado == "Confirmada"));
+
+            if (visitaExistente)
+            {
+                TempData["ErrorMessage"] = "Já tem um pedido de visita pendente ou confirmado para este veículo.";
+                return RedirectToAction("MinhasVisitas");
+            }
+
+            // Fallback para erros não identificados
+            TempData["ErrorMessage"] = "Não foi possível agendar a visita. Verifique se a data é válida (pelo menos 30 minutos no futuro) e tente novamente.";
             return View(model);
         }
 
@@ -300,6 +365,23 @@ namespace Marketplace_LabWebBD.Controllers
         [HttpGet]
         public async Task<IActionResult> Checkout(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            // Verificar se pode comprar (veículo ativo ou reservado por este comprador)
+            var canBuy = await _reservaService.CanBuyAsync(id, comprador.ID_Comprador);
+            if (!canBuy)
+            {
+                TempData["ErrorMessage"] = "Este veículo está reservado por outro comprador e não pode ser comprado neste momento.";
+                return RedirectToAction("AnuncioDetails", new { id });
+            }
+
             var model = await _compraService.GetCheckoutDetailsAsync(id);
 
             if (model == null)
@@ -330,15 +412,23 @@ namespace Marketplace_LabWebBD.Controllers
                 return RedirectToAction("Index");
             }
 
-            var compraId = await _compraService.CreateCompraAsync(model, comprador.ID_Comprador);
-
-            if (compraId.HasValue)
+            // Verificar se pode comprar (veículo ativo ou reservado por este comprador)
+            var canBuy = await _reservaService.CanBuyAsync(model.ID_Anuncio, comprador.ID_Comprador);
+            if (!canBuy)
             {
-                TempData["SuccessMessage"] = "Compra realizada com sucesso! Aguarde a confirmação de pagamento.";
-                return RedirectToAction("OrderConfirmation", new { id = compraId.Value });
+                TempData["ErrorMessage"] = "Este veículo está reservado por outro comprador e não pode ser comprado neste momento.";
+                return RedirectToAction("AnuncioDetails", new { id = model.ID_Anuncio });
             }
 
-            TempData["ErrorMessage"] = "Não foi possível concluir a compra. O veículo pode já ter sido vendido.";
+            var result = await _compraService.CreateCompraAsync(model, comprador.ID_Comprador);
+
+            if (result.CompraId.HasValue)
+            {
+                TempData["SuccessMessage"] = "Compra realizada com sucesso! Aguarde a confirmação de pagamento.";
+                return RedirectToAction("OrderConfirmation", new { id = result.CompraId.Value });
+            }
+
+            TempData["ErrorMessage"] = $"Não foi possível concluir a compra: {result.ErrorMessage}";
             return View(model);
         }
 
@@ -493,6 +583,106 @@ namespace Marketplace_LabWebBD.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        // ========== FILTROS FAVORITOS ==========
+
+        // POST: /Comprador/SaveFilter (AJAX)
+        [HttpPost]
+        public async Task<IActionResult> SaveFilter(FiltroFavoritoViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Nome_Filtro))
+            {
+                return Json(new { success = false, message = "O nome do filtro é obrigatório." });
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                return Json(new { success = false, message = "Perfil de comprador não encontrado." });
+            }
+
+            var success = await _filtroFavoritoService.SaveFilterAsync(model, comprador.ID_Comprador);
+
+            if (success)
+            {
+                return Json(new { success = true, message = "Filtro guardado com sucesso!" });
+            }
+
+            return Json(new { success = false, message = "Não foi possível guardar o filtro." });
+        }
+
+        // GET: /Comprador/MeusFiltros
+        [HttpGet]
+        public async Task<IActionResult> MeusFiltros()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var filtros = await _filtroFavoritoService.GetFiltersByCompradorAsync(comprador.ID_Comprador);
+
+            return View(filtros);
+        }
+
+        // GET: /Comprador/ApplyFilter/5
+        [HttpGet]
+        public async Task<IActionResult> ApplyFilter(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                var filters = await _filtroFavoritoService.ApplyFilterAsync(id, comprador.ID_Comprador);
+                return RedirectToAction("Search", filters);
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Filtro não encontrado.";
+                return RedirectToAction("MeusFiltros");
+            }
+        }
+
+        // POST: /Comprador/DeleteFilter/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFilter(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var comprador = await _context.Compradors.FirstOrDefaultAsync(c => c.ID_Utilizador == user!.Id);
+
+            if (comprador == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de comprador não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _filtroFavoritoService.DeleteFilterAsync(id, comprador.ID_Comprador);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Filtro eliminado com sucesso.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível eliminar o filtro.";
+            }
+
+            return RedirectToAction("MeusFiltros");
         }
     }
 }

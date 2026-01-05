@@ -136,6 +136,22 @@
                             </div>
                         </div>
 
+                        <!-- Cor e Lotação -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Cor" class="form-label"></label>
+                                <select asp-for="Cor" asp-items="Model.Cores" class="form-select" required>
+                                    <option value="">Selecione a cor...</option>
+                                </select>
+                                <span asp-validation-for="Cor" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Lotacao" class="form-label"></label>
+                                <input asp-for="Lotacao" class="form-control" type="number" min="1" max="50" required />
+                                <span asp-validation-for="Lotacao" class="text-danger"></span>
+                            </div>
+                        </div>
+
                         <!-- Localização -->
                         <div class="row">
                             <div class="col-md-12 mb-3">

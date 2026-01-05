@@ -9,8 +9,8 @@ namespace Marketplace_LabWebBD.ViewModels
         public string Tipo { get; set; } = string.Empty; // "Particular" ou "Empresa"
 
         [Required(ErrorMessage = "O NIF é obrigatório")]
-        [StringLength(20)]
-        [RegularExpression(@"^\d{9}$", ErrorMessage = "NIF deve conter 9 dígitos")]
+        [StringLength(20, ErrorMessage = "NIF não pode ter mais de 20 caracteres")]
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "NIF deve conter exatamente 9 dígitos numéricos")]
         public string NIF { get; set; } = string.Empty;
 
         [StringLength(255)]

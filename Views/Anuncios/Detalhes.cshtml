@@ -7,8 +7,8 @@
 <div class="container-fluid py-4">
     <div class="row mb-3">
         <div class="col-12">
-            <a asp-action="Search" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar à Pesquisa
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar ao Catálogo
             </a>
         </div>
     </div>
@@ -141,18 +141,35 @@
                     <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Interessado?</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Faça login como Comprador</strong> para reservar, agendar visitas ou comprar este veículo.
-                    </div>
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sessão
-                        </a>
-                        <a asp-controller="Account" asp-action="RegisterBuyer" class="btn btn-outline-primary">
-                            <i class="bi bi-person-plus"></i> Registar como Comprador
-                        </a>
-                    </div>
+                    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Comprador"))
+                    {
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Comprador" asp-action="ReservarVeiculo" asp-route-id="@Model.ID_Anuncio" class="btn btn-success btn-lg">
+                                <i class="bi bi-bookmark-check"></i> Reservar Veículo
+                            </a>
+                            <a asp-controller="Comprador" asp-action="AgendarVisita" asp-route-id="@Model.ID_Anuncio" class="btn btn-info">
+                                <i class="bi bi-calendar-event"></i> Agendar Visita
+                            </a>
+                            <a asp-controller="Comprador" asp-action="Checkout" asp-route-id="@Model.ID_Anuncio" class="btn btn-primary">
+                                <i class="bi bi-cart-check"></i> Comprar Agora
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Faça login como Comprador</strong> para reservar, agendar visitas ou comprar este veículo.
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@($"/Anuncios/Detalhes/{Model.ID_Anuncio}")" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sessão
+                            </a>
+                            <a asp-controller="Account" asp-action="RegisterBuyer" class="btn btn-outline-primary">
+                                <i class="bi bi-person-plus"></i> Registar como Comprador
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
 

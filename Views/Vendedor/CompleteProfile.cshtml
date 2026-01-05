@@ -14,8 +14,35 @@
                 <div class="card-body p-4">
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
-                        <strong>Bem-vindo!</strong> O seu pedido foi aprovado. Complete o seu perfil para começar a vender.
+                        <strong>Bem-vindo @ViewBag.UserName!</strong> O seu pedido foi aprovado. Complete o seu perfil para começar a vender.
                     </div>
+
+                    @if (ViewBag.ApprovalStatus != null)
+                    {
+                        <div class="alert alert-secondary small">
+                            <strong>Informação de Debug:</strong><br>
+                            User ID: @ViewBag.UserId<br>
+                            Status: @ViewBag.ApprovalStatus<br>
+                            ID Aprovação: @ViewBag.ApprovalId<br>
+                            Data Aprovação: @ViewBag.ApprovalDate
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
                     <form asp-action="CompleteProfile" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>

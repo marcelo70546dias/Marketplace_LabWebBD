@@ -3,8 +3,14 @@ using Marketplace_LabWebBD.Data;
 using Marketplace_LabWebBD.Models;
 using Microsoft.AspNetCore.Identity;
 using Marketplace_LabWebBD.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar cultura para pt-PT
+var cultureInfo = new CultureInfo("pt-PT");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -74,13 +80,32 @@ builder.Services.AddScoped<ICompraService, CompraService>();
 // Promoção Admin Service
 builder.Services.AddScoped<IPromocaoAdminService, PromocaoAdminService>();
 
+// Filtro Favorito Service
+builder.Services.AddScoped<IFiltroFavoritoService, FiltroFavoritoService>();
+
+// Statistics Service
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+
+// Configurar RequestLocalization para aceitar formatos de data ISO
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("pt-PT"), new CultureInfo("en-US") };
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
 var app = builder.Build();
 
-// Inicializar roles
+// Usar localização
+app.UseRequestLocalization();
+
+// Inicializar base de dados (marcas e modelos)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    await DbInitializer.Initialize(services);
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    DbInitializer.Initialize(context);
 }
 
 // Configure the HTTP request pipeline.

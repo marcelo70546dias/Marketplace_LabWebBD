@@ -53,6 +53,17 @@ namespace Marketplace_LabWebBD.ViewModels
         [Display(Name = "Combustível")]
         public int ID_Combustivel { get; set; }
 
+        // Cor
+        [Required(ErrorMessage = "A cor é obrigatória")]
+        [Display(Name = "Cor")]
+        public string Cor { get; set; } = string.Empty;
+
+        // Lotação
+        [Required(ErrorMessage = "A lotação é obrigatória")]
+        [Range(1, 50, ErrorMessage = "A lotação deve estar entre 1 e 50")]
+        [Display(Name = "Lotação (lugares)")]
+        public int Lotacao { get; set; }
+
         // Localização (Distrito)
         [Required(ErrorMessage = "A localização é obrigatória")]
         [Display(Name = "Localização")]
@@ -73,5 +84,6 @@ namespace Marketplace_LabWebBD.ViewModels
         public List<SelectListItem> Transmissoes { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Combustiveis { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Distritos { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> Cores { get; set; } = new List<SelectListItem>();
     }
 }

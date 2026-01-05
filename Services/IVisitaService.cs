@@ -10,5 +10,10 @@ namespace Marketplace_LabWebBD.Services
         Task<List<VisitaViewModel>> GetVisitasByVendedorAsync(int vendedorId);
         Task<bool> CancelVisitaAsync(int visitaId, int userId, string userRole);
         Task<bool> MarkVisitaRealizadaAsync(int visitaId, int vendedorId);
+
+        // Novos métodos para aprovação pelo vendedor
+        Task<bool> AprovarVisitaAsync(int visitaId, int vendedorId);
+        Task<bool> RecusarVisitaAsync(int visitaId, int vendedorId, string? motivo);
+        Task<int> GetNumVisitasPendentesAprovacaoAsync(int vendedorId);
     }
 }

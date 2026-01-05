@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Agendar Visita";
+    var minDate = DateTime.Now.AddHours(1).ToString("yyyy-MM-ddTHH:mm");
+    var defaultDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:mm");
 }
 
 <div class="container mt-4">
@@ -12,6 +14,21 @@
                     <h3 class="mb-0"><i class="bi bi-calendar-check"></i> Agendar Visita</h3>
                 </div>
                 <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
                         <strong>Informação:</strong> Agende uma visita para conhecer o veículo pessoalmente antes de decidir.
@@ -27,24 +44,31 @@
                         <div class="col-md-8">
                             <h4>@Model.Titulo</h4>
                             <p class="text-muted">@Model.MarcaModelo</p>
-                            <h5 class="text-primary">@Model.Preco.ToString("C")</h5>
+                            <h5 class="text-primary">@Model.Preco.ToString("N0") €</h5>
                         </div>
                     </div>
 
-                    <form asp-action="AgendarVisita" asp-route-id="@Model.ID_Anuncio" method="post">
+                    <form asp-action="AgendarVisita" method="post">
                         @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ID_Anuncio" />
+                        <input type="hidden" asp-for="Titulo" />
+                        <input type="hidden" asp-for="MarcaModelo" />
+                        <input type="hidden" asp-for="Preco" />
+                        <input type="hidden" asp-for="FotoPrincipal" />
 
                         <div class="mb-3">
-                            <label asp-for="Data_Hora" class="form-label"></label>
-                            <input asp-for="Data_Hora" class="form-control" type="datetime-local" />
+                            <label asp-for="Data_Hora" class="form-label">Data e Hora da Visita</label>
+                            <input type="datetime-local" name="Data_Hora" id="Data_Hora" class="form-control"
+                                   min="@minDate" value="@defaultDate" required />
                             <span asp-validation-for="Data_Hora" class="text-danger"></span>
-                            <small class="form-text text-muted">Selecione uma data e hora futuras</small>
+                            <small class="form-text text-muted">Selecione uma data e hora futuras (mínimo 30 minutos a partir de agora)</small>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Localizacao" class="form-label"></label>
-                            <input asp-for="Localizacao" class="form-control" value="@Model.Localizacao" />
+                            <label asp-for="Localizacao" class="form-label">Local da Visita</label>
+                            <input asp-for="Localizacao" class="form-control" placeholder="Ex: Rua da visita, Cidade" required />
                             <span asp-validation-for="Localizacao" class="text-danger"></span>
+                            <small class="form-text text-muted">Onde pretende encontrar-se com o vendedor</small>
                         </div>
 
                         <div class="mb-3">

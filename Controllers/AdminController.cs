@@ -18,25 +18,29 @@ namespace Marketplace_LabWebBD.Controllers
         private readonly IAdminLogService _logService;
         private readonly IEmailService _emailService;
         private readonly IPromocaoAdminService _promocaoAdminService;
+        private readonly IStatisticsService _statisticsService;
 
         public AdminController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IAdminLogService logService,
             IEmailService emailService,
-            IPromocaoAdminService promocaoAdminService)
+            IPromocaoAdminService promocaoAdminService,
+            IStatisticsService statisticsService)
         {
             _context = context;
             _userManager = userManager;
             _logService = logService;
             _emailService = emailService;
             _promocaoAdminService = promocaoAdminService;
+            _statisticsService = statisticsService;
         }
 
         public async Task<IActionResult> Index()
         {
             ViewBag.NumPedidosPromocao = await _promocaoAdminService.GetNumPedidosPendentesAsync();
-            return View();
+            var stats = await _statisticsService.GetAdminStatisticsAsync(12);
+            return View(stats);
         }
 
         // Página de aprovação de administradores
@@ -115,6 +119,9 @@ namespace Marketplace_LabWebBD.Controllers
             {
                 var currentAdmin = await _userManager.GetUserAsync(User);
 
+                // Garantir que o admin existe na tabela Admin
+                await EnsureAdminExistsAsync(currentAdmin.Id);
+
                 // Atualizar status de aprovação
                 user.VendorApprovalStatus = "Approved";
                 user.ID_Aprovacao_Vendedor = currentAdmin.Id;
@@ -152,6 +159,9 @@ namespace Marketplace_LabWebBD.Controllers
             if (user != null && user.VendorApprovalStatus == "Pending")
             {
                 var currentAdmin = await _userManager.GetUserAsync(User);
+
+                // Garantir que o admin existe na tabela Admin
+                await EnsureAdminExistsAsync(currentAdmin.Id);
 
                 // Atualizar status de aprovação
                 user.VendorApprovalStatus = "Rejected";
@@ -372,6 +382,9 @@ namespace Marketplace_LabWebBD.Controllers
 
             var currentAdmin = await _userManager.GetUserAsync(User);
 
+            // Garantir que o admin existe na tabela Admin
+            await EnsureAdminExistsAsync(currentAdmin.Id);
+
             // Bloquear utilizador
             user.Bloqueado = true;
             user.Motivo_Bloqueio = model.Motivo;
@@ -420,6 +433,9 @@ namespace Marketplace_LabWebBD.Controllers
 
             var currentAdmin = await _userManager.GetUserAsync(User);
 
+            // Garantir que o admin existe na tabela Admin
+            await EnsureAdminExistsAsync(currentAdmin.Id);
+
             // Desbloquear
             user.Bloqueado = false;
             user.Motivo_Bloqueio = null;
@@ -438,24 +454,15 @@ namespace Marketplace_LabWebBD.Controllers
         }
 
         // Logs administrativos
-        public async Task<IActionResult> AdminLogs(string? actionFilter, int? userId, int page = 1)
+        public async Task<IActionResult> AdminLogs(string? actionFilter, int page = 1)
         {
             var pageSize = 50;
-            var query = _context.Log_Admins
-                .Include(l => l.ID_AdminNavigation)
-                .Include(l => l.ID_Utilizador_AfetadoNavigation)
-                .AsQueryable();
+            var query = _context.Log_Admins.AsQueryable();
 
             // Aplicar filtro de ação
             if (!string.IsNullOrWhiteSpace(actionFilter))
             {
                 query = query.Where(l => l.Tipo_Acao == actionFilter);
-            }
-
-            // Aplicar filtro de utilizador
-            if (userId.HasValue)
-            {
-                query = query.Where(l => l.ID_Utilizador_Afetado == userId.Value);
             }
 
             var totalLogs = await query.CountAsync();
@@ -467,8 +474,31 @@ namespace Marketplace_LabWebBD.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
+            // Carregar dados dos admins e utilizadores afetados via UserManager
+            foreach (var log in logs)
+            {
+                if (log.ID_Admin > 0)
+                {
+                    var adminUser = await _userManager.FindByIdAsync(log.ID_Admin.ToString());
+                    if (adminUser != null)
+                    {
+                        ViewData[$"AdminNome_{log.ID_Admin}"] = adminUser.Nome;
+                        ViewData[$"AdminEmail_{log.ID_Admin}"] = adminUser.Email;
+                    }
+                }
+
+                if (log.ID_Utilizador_Afetado.HasValue && log.ID_Utilizador_Afetado.Value > 0)
+                {
+                    var affectedUser = await _userManager.FindByIdAsync(log.ID_Utilizador_Afetado.Value.ToString());
+                    if (affectedUser != null)
+                    {
+                        ViewData[$"UserNome_{log.ID_Utilizador_Afetado}"] = affectedUser.Nome;
+                        ViewData[$"UserEmail_{log.ID_Utilizador_Afetado}"] = affectedUser.Email;
+                    }
+                }
+            }
+
             ViewBag.ActionFilter = actionFilter;
-            ViewBag.UserId = userId;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
 
@@ -549,6 +579,23 @@ namespace Marketplace_LabWebBD.Controllers
             }
 
             return RedirectToAction("PedidosPromocao");
+        }
+
+        // Helper method para garantir que o admin existe na tabela Admin
+        private async Task EnsureAdminExistsAsync(int adminId)
+        {
+            var adminExists = await _context.Admins.AnyAsync(a => a.ID_Utilizador == adminId);
+
+            if (!adminExists)
+            {
+                var admin = new Admin
+                {
+                    ID_Utilizador = adminId
+                };
+
+                _context.Admins.Add(admin);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

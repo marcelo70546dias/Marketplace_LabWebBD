@@ -26,7 +26,7 @@
             <div class="col-md-4">
                 <div class="card bg-primary text-white">
                     <div class="card-body text-center">
-                        <h3>@Model.Sum(c => c.Preco).ToString("C")</h3>
+                        <h3>@Model.Sum(c => c.Preco).ToString("N0") €</h3>
                         <p class="mb-0">Valor Total</p>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                                 <strong>@venda.Titulo</strong><br />
                                 <small class="text-muted">@venda.MarcaModelo</small>
                             </td>
-                            <td><strong class="text-success">@venda.Preco.ToString("C")</strong></td>
+                            <td><strong class="text-success">@venda.Preco.ToString("N0") €</strong></td>
                             <td>
                                 <strong>@venda.CompradorNome</strong><br />
                                 <small class="text-muted">@venda.CompradorEmail</small>

@@ -68,6 +68,12 @@ namespace Marketplace_LabWebBD.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Utilizador não encontrado.";
+                return RedirectToAction("Index", "Home");
+            }
+
             // Verificar se perfil já está completo
             var vendedor = await _context.Vendedors
                 .FirstOrDefaultAsync(v => v.ID_Utilizador == user.Id);
@@ -75,8 +81,16 @@ namespace Marketplace_LabWebBD.Controllers
             if (vendedor != null)
             {
                 // Perfil já completo, redirecionar para dashboard
+                TempData["InfoMessage"] = "Perfil já está completo.";
                 return RedirectToAction("Index");
             }
+
+            // Debug info
+            ViewBag.UserId = user.Id;
+            ViewBag.UserName = user.Nome;
+            ViewBag.ApprovalStatus = user.VendorApprovalStatus;
+            ViewBag.ApprovalId = user.ID_Aprovacao_Vendedor;
+            ViewBag.ApprovalDate = user.Data_Aprovacao_Vendedor;
 
             return View();
         }
@@ -115,6 +129,16 @@ namespace Marketplace_LabWebBD.Controllers
                         return RedirectToAction("Index", "Home");
                     }
 
+                    // Verificar se o admin que aprovou existe na tabela Admin
+                    int? idAprovacao = null;
+                    if (user.ID_Aprovacao_Vendedor != null)
+                    {
+                        var adminRecord = await _context.Admins
+                            .FirstOrDefaultAsync(a => a.ID_Utilizador == user.ID_Aprovacao_Vendedor);
+
+                        idAprovacao = adminRecord?.ID_Utilizador;
+                    }
+
                     // Criar entrada Vendedor
                     var vendedor = new Vendedor
                     {
@@ -122,7 +146,7 @@ namespace Marketplace_LabWebBD.Controllers
                         Tipo = model.Tipo,
                         NIF = model.NIF,
                         Dados_Faturacao = model.Dados_Faturacao,
-                        ID_Aprovacao = user.ID_Aprovacao_Vendedor,
+                        ID_Aprovacao = idAprovacao,
                         Data_Aprovacao = user.Data_Aprovacao_Vendedor
                     };
 
@@ -179,6 +203,7 @@ namespace Marketplace_LabWebBD.Controllers
                 Modelos = new List<SelectListItem>(), // Preenchido via AJAX
                 Transmissoes = GetTransmissoesSelectList(),
                 Combustiveis = await _anuncioService.GetCombustiveisAsync(),
+                Cores = _anuncioService.GetCores(),
                 Distritos = GetDistritosSelectList()
             };
 
@@ -216,6 +241,7 @@ namespace Marketplace_LabWebBD.Controllers
             model.Modelos = await _anuncioService.GetModelosByMarcaAsync(model.ID_Marca);
             model.Transmissoes = GetTransmissoesSelectList();
             model.Combustiveis = await _anuncioService.GetCombustiveisAsync();
+            model.Cores = _anuncioService.GetCores();
             model.Distritos = GetDistritosSelectList();
 
             return View(model);
@@ -398,6 +424,83 @@ namespace Marketplace_LabWebBD.Controllers
             return View(reservas);
         }
 
+        // POST: /Vendedor/AprovarReserva/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprovarReserva(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var vendedor = await _context.Vendedors.FirstOrDefaultAsync(v => v.ID_Utilizador == user!.Id);
+
+            if (vendedor == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de vendedor não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _reservaService.AprovarReservaAsync(id, vendedor.ID_Utilizador);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Reserva aprovada com sucesso! O veículo está agora reservado para este comprador.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível aprovar a reserva. O veículo pode já estar reservado.";
+            }
+
+            return RedirectToAction("AnunciosReservados");
+        }
+
+        // POST: /Vendedor/RecusarReserva/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecusarReserva(int id, string? motivo)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var vendedor = await _context.Vendedors.FirstOrDefaultAsync(v => v.ID_Utilizador == user!.Id);
+
+            if (vendedor == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de vendedor não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _reservaService.RecusarReservaAsync(id, vendedor.ID_Utilizador, motivo);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Pedido de reserva recusado.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível recusar o pedido de reserva.";
+            }
+
+            return RedirectToAction("AnunciosReservados");
+        }
+
+        // POST: /Vendedor/CancelarReserva/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelarReserva(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var success = await _reservaService.CancelReservaAsync(id, user!.Id, "Vendedor");
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Reserva cancelada com sucesso.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível cancelar a reserva.";
+            }
+
+            return RedirectToAction("AnunciosReservados");
+        }
+
         // ========== VISITAS ==========
 
         // GET: /Vendedor/VisitasAgendadas
@@ -462,6 +565,62 @@ namespace Marketplace_LabWebBD.Controllers
             else
             {
                 TempData["ErrorMessage"] = "Não foi possível cancelar a visita.";
+            }
+
+            return RedirectToAction("VisitasAgendadas");
+        }
+
+        // POST: /Vendedor/AprovarVisita/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprovarVisita(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var vendedor = await _context.Vendedors.FirstOrDefaultAsync(v => v.ID_Utilizador == user!.Id);
+
+            if (vendedor == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de vendedor não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _visitaService.AprovarVisitaAsync(id, vendedor.ID_Utilizador);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Visita aprovada com sucesso! O comprador será notificado.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível aprovar a visita. Verifique se ainda está pendente e dentro do prazo.";
+            }
+
+            return RedirectToAction("VisitasAgendadas");
+        }
+
+        // POST: /Vendedor/RecusarVisita/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecusarVisita(int id, string? motivo)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var vendedor = await _context.Vendedors.FirstOrDefaultAsync(v => v.ID_Utilizador == user!.Id);
+
+            if (vendedor == null)
+            {
+                TempData["ErrorMessage"] = "Perfil de vendedor não encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var success = await _visitaService.RecusarVisitaAsync(id, vendedor.ID_Utilizador, motivo);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Visita recusada.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Não foi possível recusar a visita.";
             }
 
             return RedirectToAction("VisitasAgendadas");

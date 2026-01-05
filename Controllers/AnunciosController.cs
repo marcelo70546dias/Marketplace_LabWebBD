@@ -26,6 +26,9 @@ namespace Marketplace_LabWebBD.Controllers
             filters.Combustiveis = await _anuncioService.GetCombustiveisAsync();
             filters.Combustiveis.Insert(0, new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "", Text = "Todos os combustíveis" });
 
+            filters.Cores = _anuncioService.GetCores();
+            filters.Cores.Insert(0, new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "", Text = "Todas as cores" });
+
             // Load modelos if marca is selected
             if (filters.ID_Marca.HasValue)
             {

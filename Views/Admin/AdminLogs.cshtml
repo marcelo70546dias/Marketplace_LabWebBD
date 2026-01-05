@@ -16,20 +16,17 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" asp-action="AdminLogs" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-8">
                     <label for="actionFilter" class="form-label">Tipo de Ação</label>
                     <select class="form-select" id="actionFilter" name="actionFilter">
-                        <option value="">Todas</option>
+                        <option value="">Todas as ações</option>
                         <option value="BLOQUEIO_UTILIZADOR" selected="@(ViewBag.ActionFilter == "BLOQUEIO_UTILIZADOR")">Bloqueio de Utilizador</option>
                         <option value="DESBLOQUEIO_UTILIZADOR" selected="@(ViewBag.ActionFilter == "DESBLOQUEIO_UTILIZADOR")">Desbloqueio de Utilizador</option>
                         <option value="APROVACAO_VENDEDOR" selected="@(ViewBag.ActionFilter == "APROVACAO_VENDEDOR")">Aprovação de Vendedor</option>
                         <option value="REJEICAO_VENDEDOR" selected="@(ViewBag.ActionFilter == "REJEICAO_VENDEDOR")">Rejeição de Vendedor</option>
+                        <option value="APROVACAO_ADMIN" selected="@(ViewBag.ActionFilter == "APROVACAO_ADMIN")">Aprovação de Admin</option>
+                        <option value="REJEICAO_ADMIN" selected="@(ViewBag.ActionFilter == "REJEICAO_ADMIN")">Rejeição de Admin</option>
                     </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="userId" class="form-label">ID do Utilizador</label>
-                    <input type="number" class="form-control" id="userId" name="userId"
-                           value="@ViewBag.UserId" placeholder="Filtrar por ID...">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
@@ -78,10 +75,14 @@
                                         </span>
                                     </td>
                                     <td>
-                                        @if (log.ID_AdminNavigation?.ID_UtilizadorNavigation != null)
+                                        @{
+                                            var adminNome = ViewData[$"AdminNome_{log.ID_Admin}"] as string;
+                                            var adminEmail = ViewData[$"AdminEmail_{log.ID_Admin}"] as string;
+                                        }
+                                        @if (!string.IsNullOrEmpty(adminNome))
                                         {
-                                            <strong>@log.ID_AdminNavigation.ID_UtilizadorNavigation.Nome</strong><br>
-                                            <small class="text-muted">@log.ID_AdminNavigation.ID_UtilizadorNavigation.Email</small>
+                                            <strong>@adminNome</strong><br>
+                                            <small class="text-muted">@adminEmail</small>
                                         }
                                         else
                                         {
@@ -89,12 +90,16 @@
                                         }
                                     </td>
                                     <td>
-                                        @if (log.ID_Utilizador_AfetadoNavigation != null)
+                                        @{
+                                            var userNome = ViewData[$"UserNome_{log.ID_Utilizador_Afetado}"] as string;
+                                            var userEmail = ViewData[$"UserEmail_{log.ID_Utilizador_Afetado}"] as string;
+                                        }
+                                        @if (!string.IsNullOrEmpty(userNome))
                                         {
-                                            <a asp-action="UserDetails" asp-route-id="@log.ID_Utilizador_AfetadoNavigation.ID"
+                                            <a asp-action="UserDetails" asp-route-id="@log.ID_Utilizador_Afetado"
                                                class="text-decoration-none">
-                                                <strong>@log.ID_Utilizador_AfetadoNavigation.Nome</strong><br>
-                                                <small class="text-muted">@log.ID_Utilizador_AfetadoNavigation.Email</small>
+                                                <strong>@userNome</strong><br>
+                                                <small class="text-muted">@userEmail</small>
                                             </a>
                                         }
                                         else
@@ -129,8 +134,7 @@
                             <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
                                 <a class="page-link" asp-action="AdminLogs"
                                    asp-route-page="@(ViewBag.CurrentPage - 1)"
-                                   asp-route-actionFilter="@ViewBag.ActionFilter"
-                                   asp-route-userId="@ViewBag.UserId">
+                                   asp-route-actionFilter="@ViewBag.ActionFilter">
                                     Anterior
                                 </a>
                             </li>
@@ -140,8 +144,7 @@
                                 <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
                                     <a class="page-link" asp-action="AdminLogs"
                                        asp-route-page="@i"
-                                       asp-route-actionFilter="@ViewBag.ActionFilter"
-                                       asp-route-userId="@ViewBag.UserId">
+                                       asp-route-actionFilter="@ViewBag.ActionFilter">
                                         @i
                                     </a>
                                 </li>
@@ -150,8 +153,7 @@
                             <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
                                 <a class="page-link" asp-action="AdminLogs"
                                    asp-route-page="@(ViewBag.CurrentPage + 1)"
-                                   asp-route-actionFilter="@ViewBag.ActionFilter"
-                                   asp-route-userId="@ViewBag.UserId">
+                                   asp-route-actionFilter="@ViewBag.ActionFilter">
                                     Próxima
                                 </a>
                             </li>

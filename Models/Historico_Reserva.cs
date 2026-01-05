@@ -15,7 +15,11 @@ public partial class Historico_Reserva
 
     public DateOnly? Data_Fim { get; set; }
 
-    public string? Estado { get; set; }
+    public string? Estado { get; set; }  // "Pendente", "Confirmada", "Recusada", "Expirada", "Cancelada", "Concluida"
+
+    public string? Motivo_Recusa { get; set; }
+
+    public DateTime? Data_Resposta { get; set; }
 
     public virtual Anuncio ID_AnuncioNavigation { get; set; } = null!;
 

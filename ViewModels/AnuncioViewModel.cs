@@ -37,6 +37,10 @@ namespace Marketplace_LabWebBD.ViewModels
         public DateOnly? Reservado_Ate { get; set; }
         public string? NomeComprador { get; set; }
 
+        // Dados do Vendedor (para detalhes)
+        public string? NomeVendedor { get; set; }
+        public string? ContactoVendedor { get; set; }
+
         // IDs para edição
         public int ID_Modelo { get; set; }
         public int ID_Combustivel { get; set; }

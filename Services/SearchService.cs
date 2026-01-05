@@ -2,16 +2,19 @@ using Marketplace_LabWebBD.Data;
 using Marketplace_LabWebBD.Models;
 using Marketplace_LabWebBD.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Marketplace_LabWebBD.Services
 {
     public class SearchService : ISearchService
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public SearchService(ApplicationDbContext context)
+        public SearchService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<SearchViewModel> SearchAnunciosAsync(SearchViewModel filters, int page, int pageSize)
@@ -63,6 +66,11 @@ namespace Marketplace_LabWebBD.Services
                 query = query.Where(a => a.Preco <= filters.Preco_Max.Value);
             }
 
+            if (filters.Quilometragem_Min.HasValue)
+            {
+                query = query.Where(a => a.ID_CarroNavigation.Quilometragem >= filters.Quilometragem_Min.Value);
+            }
+
             if (filters.Quilometragem_Max.HasValue)
             {
                 query = query.Where(a => a.ID_CarroNavigation.Quilometragem <= filters.Quilometragem_Max.Value);
@@ -76,6 +84,21 @@ namespace Marketplace_LabWebBD.Services
             if (!string.IsNullOrEmpty(filters.Caixa))
             {
                 query = query.Where(a => a.ID_CarroNavigation.Caixa == filters.Caixa);
+            }
+
+            if (!string.IsNullOrEmpty(filters.Cor))
+            {
+                query = query.Where(a => a.ID_CarroNavigation.Cor == filters.Cor);
+            }
+
+            if (filters.Lotacao_Min.HasValue)
+            {
+                query = query.Where(a => a.ID_CarroNavigation.Lotacao >= filters.Lotacao_Min.Value);
+            }
+
+            if (filters.Lotacao_Max.HasValue)
+            {
+                query = query.Where(a => a.ID_CarroNavigation.Lotacao <= filters.Lotacao_Max.Value);
             }
 
             if (!string.IsNullOrEmpty(filters.Distrito))
@@ -107,7 +130,11 @@ namespace Marketplace_LabWebBD.Services
                 .ToListAsync();
 
             // Map to ViewModels
-            var resultados = anuncios.Select(a => MapToViewModel(a)).ToList();
+            var resultados = new List<AnuncioViewModel>();
+            foreach (var anuncio in anuncios)
+            {
+                resultados.Add(await MapToViewModelAsync(anuncio));
+            }
 
             // Populate result
             filters.Resultados = resultados;
@@ -134,7 +161,12 @@ namespace Marketplace_LabWebBD.Services
                 .Take(count)
                 .ToListAsync();
 
-            return anuncios.Select(a => MapToViewModel(a)).ToList();
+            var result = new List<AnuncioViewModel>();
+            foreach (var anuncio in anuncios)
+            {
+                result.Add(await MapToViewModelAsync(anuncio));
+            }
+            return result;
         }
 
         public async Task<List<AnuncioViewModel>> GetFeaturedAnunciosAsync(int count = 6)
@@ -157,7 +189,12 @@ namespace Marketplace_LabWebBD.Services
                 .Take(count)
                 .ToListAsync();
 
-            return anuncios.Select(a => MapToViewModel(a)).ToList();
+            var result = new List<AnuncioViewModel>();
+            foreach (var anuncio in anuncios)
+            {
+                result.Add(await MapToViewModelAsync(anuncio));
+            }
+            return result;
         }
 
         public async Task<AnuncioViewModel?> GetAnuncioDetailsAsync(int anuncioId)
@@ -171,19 +208,31 @@ namespace Marketplace_LabWebBD.Services
                 .Include(a => a.ID_CarroNavigation)
                     .ThenInclude(c => c.Fotos)
                 .Include(a => a.ID_VendedorNavigation)
-                    .ThenInclude(v => v.ID_UtilizadorNavigation)
                 .FirstOrDefaultAsync(a => a.ID_Anuncio == anuncioId);
 
-            return anuncio != null ? MapToViewModel(anuncio) : null;
+            return anuncio != null ? await MapToViewModelAsync(anuncio) : null;
         }
 
         // Helper method to map Anuncio to ViewModel
-        private AnuncioViewModel MapToViewModel(Anuncio anuncio)
+        private async Task<AnuncioViewModel> MapToViewModelAsync(Anuncio anuncio)
         {
             var carro = anuncio.ID_CarroNavigation;
             var modelo = carro.ID_ModeloNavigation;
             var marca = modelo.ID_MarcaNavigation;
             var combustivel = carro.ID_CombustivelNavigation;
+
+            // Load vendedor data via UserManager if available
+            string? nomeVendedor = null;
+            string? contactoVendedor = null;
+            if (anuncio.ID_VendedorNavigation != null)
+            {
+                var vendedorUser = await _userManager.FindByIdAsync(anuncio.ID_VendedorNavigation.ID_Utilizador.ToString());
+                if (vendedorUser != null)
+                {
+                    nomeVendedor = vendedorUser.Nome;
+                    contactoVendedor = vendedorUser.Contacto;
+                }
+            }
 
             return new AnuncioViewModel
             {
@@ -221,7 +270,11 @@ namespace Marketplace_LabWebBD.Services
 
                 ID_Modelo = carro.ID_Modelo,
                 ID_Combustivel = carro.ID_Combustivel,
-                ID_Vendedor = anuncio.ID_Vendedor
+                ID_Vendedor = anuncio.ID_Vendedor,
+
+                // Vendedor info (for detail views)
+                NomeVendedor = nomeVendedor,
+                ContactoVendedor = contactoVendedor
             };
         }
     }

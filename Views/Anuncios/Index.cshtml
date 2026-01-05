@@ -1,7 +1,7 @@
 @model SearchViewModel
 
 @{
-    ViewData["Title"] = "Pesquisar Veículos";
+    ViewData["Title"] = "Catálogo de Veículos";
 }
 
 <div class="container-fluid py-4">
@@ -44,41 +44,78 @@
                             </div>
                         </div>
 
-                        <!-- Ano -->
+                        <hr />
+
+                        <!-- More Filters (Collapsible) -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Ano</label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <input asp-for="Ano_Min" class="form-control" placeholder="Mín" />
-                                </div>
-                                <div class="col-6">
-                                    <input asp-for="Ano_Max" class="form-control" placeholder="Máx" />
+                            <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#moreFilters" aria-expanded="false">
+                                <i class="bi bi-plus-circle"></i> Mais Filtros
+                            </button>
+                        </div>
+
+                        <div class="collapse" id="moreFilters">
+                            <!-- Ano -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ano</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input asp-for="Ano_Min" class="form-control form-control-sm" placeholder="Mín" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input asp-for="Ano_Max" class="form-control form-control-sm" placeholder="Máx" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Quilometragem -->
-                        <div class="mb-3">
-                            <label asp-for="Quilometragem_Max" class="form-label fw-bold"></label>
-                            <input asp-for="Quilometragem_Max" class="form-control" placeholder="Ex: 100000" />
-                        </div>
+                            <!-- Quilometragem -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Quilometragem (km)</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input asp-for="Quilometragem_Min" class="form-control form-control-sm" placeholder="Mín" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input asp-for="Quilometragem_Max" class="form-control form-control-sm" placeholder="Máx" />
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Combustível -->
-                        <div class="mb-3">
-                            <label asp-for="ID_Combustivel" class="form-label fw-bold"></label>
-                            <select asp-for="ID_Combustivel" asp-items="Model.Combustiveis" class="form-select"></select>
-                        </div>
+                            <!-- Combustível -->
+                            <div class="mb-3">
+                                <label asp-for="ID_Combustivel" class="form-label fw-bold"></label>
+                                <select asp-for="ID_Combustivel" asp-items="Model.Combustiveis" class="form-select form-select-sm"></select>
+                            </div>
 
-                        <!-- Caixa -->
-                        <div class="mb-3">
-                            <label asp-for="Caixa" class="form-label fw-bold"></label>
-                            <select asp-for="Caixa" asp-items="Model.CaixasDisponiveis" class="form-select"></select>
-                        </div>
+                            <!-- Caixa -->
+                            <div class="mb-3">
+                                <label asp-for="Caixa" class="form-label fw-bold"></label>
+                                <select asp-for="Caixa" asp-items="Model.CaixasDisponiveis" class="form-select form-select-sm"></select>
+                            </div>
 
-                        <!-- Distrito -->
-                        <div class="mb-3">
-                            <label asp-for="Distrito" class="form-label fw-bold"></label>
-                            <select asp-for="Distrito" asp-items="Model.DistritosDisponiveis" class="form-select"></select>
+                            <!-- Cor -->
+                            <div class="mb-3">
+                                <label asp-for="Cor" class="form-label fw-bold"></label>
+                                <select asp-for="Cor" asp-items="Model.Cores" class="form-select form-select-sm"></select>
+                            </div>
+
+                            <!-- Lotação -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Lotação (lugares)</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input asp-for="Lotacao_Min" class="form-control form-control-sm" placeholder="Mín" type="number" min="1" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input asp-for="Lotacao_Max" class="form-control form-control-sm" placeholder="Máx" type="number" max="50" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Distrito -->
+                            <div class="mb-3">
+                                <label asp-for="Distrito" class="form-label fw-bold"></label>
+                                <select asp-for="Distrito" asp-items="Model.DistritosDisponiveis" class="form-select form-select-sm"></select>
+                            </div>
                         </div>
 
                         <!-- Botões -->
@@ -86,6 +123,18 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i> Aplicar Filtros
                             </button>
+                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Comprador"))
+                            {
+                                @if (Model.HasFilters())
+                                {
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#saveFilterModal">
+                                        <i class="bi bi-star"></i> Guardar Filtro
+                                    </button>
+                                }
+                                <a asp-controller="Comprador" asp-action="MeusFiltros" class="btn btn-outline-info">
+                                    <i class="bi bi-bookmark"></i> Meus Filtros
+                                </a>
+                            }
                             <a asp-action="Index" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle"></i> Limpar Filtros
                             </a>
@@ -113,7 +162,7 @@
                     @if (Model.HasFilters())
                     {
                         <p class="text-muted small mb-0">
-                            <i class="bi bi-funnel"></i> @Model.GetFilterSummary()
+                            <i class="bi bi-funnel"></i> Filtros ativos
                         </p>
                     }
                 </div>
@@ -148,6 +197,10 @@
                         {
                             <input type="hidden" name="Ano_Max" value="@Model.Ano_Max" />
                         }
+                        @if (Model.Quilometragem_Min.HasValue)
+                        {
+                            <input type="hidden" name="Quilometragem_Min" value="@Model.Quilometragem_Min" />
+                        }
                         @if (Model.Quilometragem_Max.HasValue)
                         {
                             <input type="hidden" name="Quilometragem_Max" value="@Model.Quilometragem_Max" />
@@ -159,6 +212,18 @@
                         @if (!string.IsNullOrEmpty(Model.Caixa))
                         {
                             <input type="hidden" name="Caixa" value="@Model.Caixa" />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Cor))
+                        {
+                            <input type="hidden" name="Cor" value="@Model.Cor" />
+                        }
+                        @if (Model.Lotacao_Min.HasValue)
+                        {
+                            <input type="hidden" name="Lotacao_Min" value="@Model.Lotacao_Min" />
+                        }
+                        @if (Model.Lotacao_Max.HasValue)
+                        {
+                            <input type="hidden" name="Lotacao_Max" value="@Model.Lotacao_Max" />
                         }
                         @if (!string.IsNullOrEmpty(Model.Distrito))
                         {
@@ -175,6 +240,298 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Active Filter Tags -->
+            @if (Model.HasFilters())
+            {
+                <div class="mb-3">
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (!string.IsNullOrEmpty(Model.Categoria))
+                        {
+                            <span class="badge bg-primary rounded-pill">
+                                Categoria: @Model.Categoria
+                                <a href="@Url.Action("Index", new {
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (Model.ID_Marca.HasValue && Model.Marcas.Any())
+                        {
+                            var marcaNome = Model.Marcas.FirstOrDefault(m => m.Value == Model.ID_Marca.ToString())?.Text;
+                            if (!string.IsNullOrEmpty(marcaNome))
+                            {
+                                <span class="badge bg-primary rounded-pill">
+                                    Marca: @marcaNome
+                                    <a href="@Url.Action("Index", new {
+                                        Categoria = Model.Categoria,
+                                        ID_Modelo = Model.ID_Modelo,
+                                        Preco_Min = Model.Preco_Min,
+                                        Preco_Max = Model.Preco_Max,
+                                        Ano_Min = Model.Ano_Min,
+                                        Ano_Max = Model.Ano_Max,
+                                        Quilometragem_Min = Model.Quilometragem_Min,
+                                        Quilometragem_Max = Model.Quilometragem_Max,
+                                        ID_Combustivel = Model.ID_Combustivel,
+                                        Caixa = Model.Caixa,
+                                        Cor = Model.Cor,
+                                        Lotacao_Min = Model.Lotacao_Min,
+                                        Lotacao_Max = Model.Lotacao_Max,
+                                        Distrito = Model.Distrito,
+                                        SortBy = Model.SortBy
+                                    })" class="text-white ms-1" title="Remover filtro">
+                                        <i class="bi bi-x"></i>
+                                    </a>
+                                </span>
+                            }
+                        }
+                        @if (Model.ID_Modelo.HasValue && Model.Modelos.Any())
+                        {
+                            var modeloNome = Model.Modelos.FirstOrDefault(m => m.Value == Model.ID_Modelo.ToString())?.Text;
+                            if (!string.IsNullOrEmpty(modeloNome))
+                            {
+                                <span class="badge bg-primary rounded-pill">
+                                    Modelo: @modeloNome
+                                    <a href="@Url.Action("Index", new {
+                                        Categoria = Model.Categoria,
+                                        ID_Marca = Model.ID_Marca,
+                                        Preco_Min = Model.Preco_Min,
+                                        Preco_Max = Model.Preco_Max,
+                                        Ano_Min = Model.Ano_Min,
+                                        Ano_Max = Model.Ano_Max,
+                                        Quilometragem_Min = Model.Quilometragem_Min,
+                                        Quilometragem_Max = Model.Quilometragem_Max,
+                                        ID_Combustivel = Model.ID_Combustivel,
+                                        Caixa = Model.Caixa,
+                                        Cor = Model.Cor,
+                                        Lotacao_Min = Model.Lotacao_Min,
+                                        Lotacao_Max = Model.Lotacao_Max,
+                                        Distrito = Model.Distrito,
+                                        SortBy = Model.SortBy
+                                    })" class="text-white ms-1" title="Remover filtro">
+                                        <i class="bi bi-x"></i>
+                                    </a>
+                                </span>
+                            }
+                        }
+                        @if (Model.Preco_Min.HasValue || Model.Preco_Max.HasValue)
+                        {
+                            <span class="badge bg-info rounded-pill">
+                                Preço: @(Model.Preco_Min.HasValue ? $"€{Model.Preco_Min:N0}" : "Min") - @(Model.Preco_Max.HasValue ? $"€{Model.Preco_Max:N0}" : "Max")
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (Model.Ano_Min.HasValue || Model.Ano_Max.HasValue)
+                        {
+                            <span class="badge bg-secondary rounded-pill">
+                                Ano: @(Model.Ano_Min?.ToString() ?? "Min") - @(Model.Ano_Max?.ToString() ?? "Max")
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (Model.Quilometragem_Min.HasValue || Model.Quilometragem_Max.HasValue)
+                        {
+                            <span class="badge bg-secondary rounded-pill">
+                                KM: @(Model.Quilometragem_Min.HasValue ? $"{Model.Quilometragem_Min:N0}" : "Min") - @(Model.Quilometragem_Max.HasValue ? $"{Model.Quilometragem_Max:N0}" : "Max")
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (Model.ID_Combustivel.HasValue && Model.Combustiveis.Any())
+                        {
+                            var combustivelNome = Model.Combustiveis.FirstOrDefault(c => c.Value == Model.ID_Combustivel.ToString())?.Text;
+                            if (!string.IsNullOrEmpty(combustivelNome))
+                            {
+                                <span class="badge bg-success rounded-pill">
+                                    Combustível: @combustivelNome
+                                    <a href="@Url.Action("Index", new {
+                                        Categoria = Model.Categoria,
+                                        ID_Marca = Model.ID_Marca,
+                                        ID_Modelo = Model.ID_Modelo,
+                                        Preco_Min = Model.Preco_Min,
+                                        Preco_Max = Model.Preco_Max,
+                                        Ano_Min = Model.Ano_Min,
+                                        Ano_Max = Model.Ano_Max,
+                                        Quilometragem_Min = Model.Quilometragem_Min,
+                                        Quilometragem_Max = Model.Quilometragem_Max,
+                                        Caixa = Model.Caixa,
+                                        Cor = Model.Cor,
+                                        Lotacao_Min = Model.Lotacao_Min,
+                                        Lotacao_Max = Model.Lotacao_Max,
+                                        Distrito = Model.Distrito,
+                                        SortBy = Model.SortBy
+                                    })" class="text-white ms-1" title="Remover filtro">
+                                        <i class="bi bi-x"></i>
+                                    </a>
+                                </span>
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Caixa))
+                        {
+                            <span class="badge bg-warning text-dark rounded-pill">
+                                Caixa: @Model.Caixa
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-dark ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Cor))
+                        {
+                            <span class="badge bg-dark rounded-pill">
+                                Cor: @Model.Cor
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (Model.Lotacao_Min.HasValue || Model.Lotacao_Max.HasValue)
+                        {
+                            <span class="badge bg-secondary rounded-pill">
+                                Lotação: @(Model.Lotacao_Min?.ToString() ?? "Min") - @(Model.Lotacao_Max?.ToString() ?? "Max") lugares
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Distrito = Model.Distrito,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Distrito))
+                        {
+                            <span class="badge bg-danger rounded-pill">
+                                Distrito: @Model.Distrito
+                                <a href="@Url.Action("Index", new {
+                                    Categoria = Model.Categoria,
+                                    ID_Marca = Model.ID_Marca,
+                                    ID_Modelo = Model.ID_Modelo,
+                                    Preco_Min = Model.Preco_Min,
+                                    Preco_Max = Model.Preco_Max,
+                                    Ano_Min = Model.Ano_Min,
+                                    Ano_Max = Model.Ano_Max,
+                                    Quilometragem_Min = Model.Quilometragem_Min,
+                                    Quilometragem_Max = Model.Quilometragem_Max,
+                                    ID_Combustivel = Model.ID_Combustivel,
+                                    Caixa = Model.Caixa,
+                                    Cor = Model.Cor,
+                                    Lotacao_Min = Model.Lotacao_Min,
+                                    Lotacao_Max = Model.Lotacao_Max,
+                                    SortBy = Model.SortBy
+                                })" class="text-white ms-1" title="Remover filtro">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
 
             <!-- Grid de Resultados -->
             @if (Model.Resultados.Any())
@@ -218,7 +575,7 @@
                                         </div>
                                     </div>
 
-                                    <a asp-action="Detalhes" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-primary w-100">
+                                    <a asp-controller="Anuncios" asp-action="Detalhes" asp-route-id="@anuncio.ID_Anuncio" class="btn btn-primary w-100">
                                         <i class="bi bi-eye"></i> Ver Detalhes
                                     </a>
                                 </div>
@@ -241,9 +598,13 @@
                                     (Model.Preco_Max.HasValue ? $"&Preco_Max={Model.Preco_Max}" : "") +
                                     (Model.Ano_Min.HasValue ? $"&Ano_Min={Model.Ano_Min}" : "") +
                                     (Model.Ano_Max.HasValue ? $"&Ano_Max={Model.Ano_Max}" : "") +
+                                    (Model.Quilometragem_Min.HasValue ? $"&Quilometragem_Min={Model.Quilometragem_Min}" : "") +
                                     (Model.Quilometragem_Max.HasValue ? $"&Quilometragem_Max={Model.Quilometragem_Max}" : "") +
                                     (Model.ID_Combustivel.HasValue ? $"&ID_Combustivel={Model.ID_Combustivel}" : "") +
                                     (!string.IsNullOrEmpty(Model.Caixa) ? $"&Caixa={Model.Caixa}" : "") +
+                                    (!string.IsNullOrEmpty(Model.Cor) ? $"&Cor={Model.Cor}" : "") +
+                                    (Model.Lotacao_Min.HasValue ? $"&Lotacao_Min={Model.Lotacao_Min}" : "") +
+                                    (Model.Lotacao_Max.HasValue ? $"&Lotacao_Max={Model.Lotacao_Max}" : "") +
                                     (!string.IsNullOrEmpty(Model.Distrito) ? $"&Distrito={Model.Distrito}" : "") +
                                     (!string.IsNullOrEmpty(Model.SortBy) ? $"&SortBy={Model.SortBy}" : "");
                             }
@@ -312,26 +673,73 @@
     }
 </style>
 
+<!-- Modal para Guardar Filtro (Apenas para Compradores) -->
+@if (User.Identity?.IsAuthenticated == true && User.IsInRole("Comprador"))
+{
+<div class="modal fade" id="saveFilterModal" tabindex="-1" aria-labelledby="saveFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveFilterModalLabel">Guardar Filtro de Pesquisa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="saveFilterForm">
+                    <div class="mb-3">
+                        <label for="filterName" class="form-label">Nome do Filtro</label>
+                        <input type="text" class="form-control" id="filterName" placeholder="Ex: SUVs até 30k" maxlength="100" required>
+                        <small class="form-text text-muted">Dê um nome descritivo ao seu filtro para encontrá-lo facilmente depois.</small>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Filtros atuais que serão guardados:</strong>
+                        <p class="mb-0 mt-2 small">@Model.GetFilterSummary()</p>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="saveFilter()">
+                    <i class="bi bi-star"></i> Guardar Filtro
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
 @section Scripts {
     <script>
         // Cascading dropdown: Marca → Modelo
         $(document).ready(function() {
             var initialModeloId = @(Model.ID_Modelo?.ToString() ?? "null");
+            var initialMarcaId = @(Model.ID_Marca?.ToString() ?? "null");
 
-            $('#marcaSelect').change(function() {
-                var marcaId = $(this).val();
+            // Auto-expand "More Filters" if any advanced filter is applied
+            var hasAdvancedFilters = @((Model.Ano_Min.HasValue || Model.Ano_Max.HasValue ||
+                Model.Quilometragem_Min.HasValue || Model.Quilometragem_Max.HasValue ||
+                Model.ID_Combustivel.HasValue || !string.IsNullOrEmpty(Model.Caixa) ||
+                !string.IsNullOrEmpty(Model.Cor) || Model.Lotacao_Min.HasValue ||
+                Model.Lotacao_Max.HasValue || !string.IsNullOrEmpty(Model.Distrito)).ToString().ToLower());
+
+            if (hasAdvancedFilters) {
+                $('#moreFilters').addClass('show');
+            }
+
+            // Função para carregar modelos
+            function loadModelos(marcaId, selectModeloId) {
                 var modeloSelect = $('#modeloSelect');
 
                 modeloSelect.empty();
                 modeloSelect.append('<option value="">Carregando modelos...</option>');
 
                 if (marcaId) {
-                    $.getJSON('@Url.Action("GetModelosByMarca")', { marcaId: marcaId }, function(data) {
+                    $.getJSON('@Url.Action("GetModelosByMarca", "Anuncios")', { marcaId: marcaId }, function(data) {
                         modeloSelect.empty();
                         modeloSelect.append('<option value="">Todos os modelos</option>');
                         $.each(data, function(index, item) {
                             var option = $('<option></option>').val(item.value).text(item.text);
-                            if (item.value == initialModeloId) {
+                            if (item.value == selectModeloId) {
                                 option.prop('selected', true);
                             }
                             modeloSelect.append(option);
@@ -344,7 +752,68 @@
                     modeloSelect.empty();
                     modeloSelect.append('<option value="">Selecione a marca primeiro</option>');
                 }
+            }
+
+            // Event handler para mudança de marca
+            $('#marcaSelect').change(function() {
+                var marcaId = $(this).val();
+                loadModelos(marcaId, null);
             });
+
+            // Carregar modelos na inicialização se já houver marca selecionada
+            if (initialMarcaId) {
+                loadModelos(initialMarcaId, initialModeloId);
+            }
         });
+
+        // Save filter function
+        function saveFilter() {
+            var filterName = $('#filterName').val().trim();
+
+            if (!filterName) {
+                alert('Por favor, insira um nome para o filtro.');
+                return;
+            }
+
+            var filterData = {
+                Nome_Filtro: filterName,
+                Categoria: '@Model.Categoria',
+                ID_Marca: @(Model.ID_Marca?.ToString() ?? "null"),
+                ID_Modelo: @(Model.ID_Modelo?.ToString() ?? "null"),
+                Ano_Min: @(Model.Ano_Min?.ToString() ?? "null"),
+                Ano_Max: @(Model.Ano_Max?.ToString() ?? "null"),
+                Preco_Min: @(Model.Preco_Min?.ToString() ?? "null"),
+                Preco_Max: @(Model.Preco_Max?.ToString() ?? "null"),
+                Quilometragem_Min: @(Model.Quilometragem_Min?.ToString() ?? "null"),
+                Quilometragem_Max: @(Model.Quilometragem_Max?.ToString() ?? "null"),
+                ID_Combustivel: @(Model.ID_Combustivel?.ToString() ?? "null"),
+                Caixa: '@Model.Caixa',
+                Cor: '@Model.Cor',
+                Lotacao_Min: @(Model.Lotacao_Min?.ToString() ?? "null"),
+                Lotacao_Max: @(Model.Lotacao_Max?.ToString() ?? "null"),
+                Localizacao: '@Model.Distrito'
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveFilter", "Comprador")',
+                type: 'POST',
+                data: filterData,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $('#saveFilterModal').modal('hide');
+                        $('#filterName').val('');
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Erro ao guardar filtro. Tente novamente.');
+                }
+            });
+        }
     </script>
 }

@@ -2,16 +2,19 @@ using Microsoft.EntityFrameworkCore;
 using Marketplace_LabWebBD.Data;
 using Marketplace_LabWebBD.Models;
 using Marketplace_LabWebBD.ViewModels;
+using Microsoft.AspNetCore.Identity;
 
 namespace Marketplace_LabWebBD.Services
 {
     public class CompraService : ICompraService
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CompraService(ApplicationDbContext context)
+        public CompraService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<CheckoutViewModel?> GetCheckoutDetailsAsync(int anuncioId)
@@ -46,7 +49,7 @@ namespace Marketplace_LabWebBD.Services
             };
         }
 
-        public async Task<int?> CreateCompraAsync(CheckoutViewModel model, int compradorId)
+        public async Task<(int? CompraId, string? ErrorMessage)> CreateCompraAsync(CheckoutViewModel model, int compradorId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -55,11 +58,11 @@ namespace Marketplace_LabWebBD.Services
                 var anuncio = await _context.Anuncios.FindAsync(model.ID_Anuncio);
 
                 if (anuncio == null)
-                    return null;
+                    return (null, "Anúncio não encontrado");
 
                 // Verificar se o anúncio está disponível
                 if (anuncio.Estado_Anuncio != "Ativo" && anuncio.Estado_Anuncio != "Reservado")
-                    return null;
+                    return (null, $"Estado do anúncio é '{anuncio.Estado_Anuncio}', esperado 'Ativo' ou 'Reservado'");
 
                 // Criar a compra
                 var compra = new Compra
@@ -81,25 +84,27 @@ namespace Marketplace_LabWebBD.Services
                 anuncio.Reservado_Por = null;
                 anuncio.Reservado_Ate = null;
 
-                // Se havia uma reserva ativa, marcá-la como concluída
+                // Se havia uma reserva confirmada, marcá-la como concluída
                 var historicoReserva = await _context.Historico_Reservas
-                    .Where(h => h.ID_Anuncio == model.ID_Anuncio && h.Estado == "Ativa")
+                    .Where(h => h.ID_Anuncio == model.ID_Anuncio && h.Estado == "Confirmada")
                     .FirstOrDefaultAsync();
 
                 if (historicoReserva != null)
                 {
                     historicoReserva.Estado = "Concluida";
+                    historicoReserva.Data_Resposta = DateTime.Now;
                 }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return compra.ID_Compra;
+                return (compra.ID_Compra, null);
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return null;
+                var innerMsg = ex.InnerException?.Message ?? ex.Message;
+                return (null, $"Erro BD: {innerMsg}");
             }
         }
 
@@ -188,28 +193,36 @@ namespace Marketplace_LabWebBD.Services
                     .ThenInclude(car => car.Fotos)
                 .Include(c => c.ID_AnuncioNavigation)
                     .ThenInclude(a => a.ID_VendedorNavigation)
-                    .ThenInclude(v => v.ID_UtilizadorNavigation)
                 .Where(c => c.ID_Comprador == compradorId)
                 .OrderByDescending(c => c.Data)
-                .Select(c => new CompraViewModel
+                .ToListAsync();
+
+            var result = new List<CompraViewModel>();
+
+            foreach (var c in compras)
+            {
+                // Carregar dados do vendedor via UserManager
+                var vendedorUser = await _userManager.FindByIdAsync(c.ID_AnuncioNavigation.ID_VendedorNavigation.ID_Utilizador.ToString());
+
+                result.Add(new CompraViewModel
                 {
                     ID_Compra = c.ID_Compra,
                     ID_Anuncio = c.ID_Anuncio,
                     Titulo = c.ID_AnuncioNavigation.Titulo ?? string.Empty,
                     Preco = c.Preco,
-                    FotoPrincipal = c.ID_AnuncioNavigation.ID_CarroNavigation!.Fotos.FirstOrDefault()!.Fotografia,
+                    FotoPrincipal = c.ID_AnuncioNavigation.ID_CarroNavigation?.Fotos.FirstOrDefault()?.Fotografia,
                     Data = c.Data,
                     Estado_Pagamento = c.Estado_Pagamento,
                     Metodo_Pagamento = c.Metodo_Pagamento,
                     Notas = c.Notas,
-                    MarcaModelo = $"{c.ID_AnuncioNavigation.ID_CarroNavigation!.ID_ModeloNavigation!.ID_MarcaNavigation!.Nome} {c.ID_AnuncioNavigation.ID_CarroNavigation.ID_ModeloNavigation.Nome}",
-                    VendedorNome = c.ID_AnuncioNavigation.ID_VendedorNavigation.ID_UtilizadorNavigation.Nome,
-                    VendedorEmail = c.ID_AnuncioNavigation.ID_VendedorNavigation.ID_UtilizadorNavigation.Email,
-                    VendedorContacto = c.ID_AnuncioNavigation.ID_VendedorNavigation.ID_UtilizadorNavigation.Contacto
-                })
-                .ToListAsync();
+                    MarcaModelo = $"{c.ID_AnuncioNavigation.ID_CarroNavigation?.ID_ModeloNavigation?.ID_MarcaNavigation?.Nome} {c.ID_AnuncioNavigation.ID_CarroNavigation?.ID_ModeloNavigation?.Nome}",
+                    VendedorNome = vendedorUser?.Nome,
+                    VendedorEmail = vendedorUser?.Email,
+                    VendedorContacto = vendedorUser?.Contacto
+                });
+            }
 
-            return compras;
+            return result;
         }
 
         public async Task<List<CompraViewModel>> GetComprasByVendedorAsync(int vendedorId)
@@ -223,28 +236,36 @@ namespace Marketplace_LabWebBD.Services
                     .ThenInclude(a => a.ID_CarroNavigation)
                     .ThenInclude(car => car.Fotos)
                 .Include(c => c.ID_CompradorNavigation)
-                    .ThenInclude(comp => comp.ID_UtilizadorNavigation)
                 .Where(c => c.ID_AnuncioNavigation.ID_Vendedor == vendedorId)
                 .OrderByDescending(c => c.Data)
-                .Select(c => new CompraViewModel
+                .ToListAsync();
+
+            var result = new List<CompraViewModel>();
+
+            foreach (var c in compras)
+            {
+                // Carregar dados do comprador via UserManager
+                var compradorUser = await _userManager.FindByIdAsync(c.ID_CompradorNavigation.ID_Utilizador.ToString());
+
+                result.Add(new CompraViewModel
                 {
                     ID_Compra = c.ID_Compra,
                     ID_Anuncio = c.ID_Anuncio,
                     Titulo = c.ID_AnuncioNavigation.Titulo ?? string.Empty,
                     Preco = c.Preco,
-                    FotoPrincipal = c.ID_AnuncioNavigation.ID_CarroNavigation!.Fotos.FirstOrDefault()!.Fotografia,
+                    FotoPrincipal = c.ID_AnuncioNavigation.ID_CarroNavigation?.Fotos.FirstOrDefault()?.Fotografia,
                     Data = c.Data,
                     Estado_Pagamento = c.Estado_Pagamento,
                     Metodo_Pagamento = c.Metodo_Pagamento,
                     Notas = c.Notas,
-                    MarcaModelo = $"{c.ID_AnuncioNavigation.ID_CarroNavigation!.ID_ModeloNavigation!.ID_MarcaNavigation!.Nome} {c.ID_AnuncioNavigation.ID_CarroNavigation.ID_ModeloNavigation.Nome}",
-                    CompradorNome = c.ID_CompradorNavigation.ID_UtilizadorNavigation.Nome,
-                    CompradorEmail = c.ID_CompradorNavigation.ID_UtilizadorNavigation.Email,
-                    CompradorContacto = c.ID_CompradorNavigation.ID_UtilizadorNavigation.Contacto
-                })
-                .ToListAsync();
+                    MarcaModelo = $"{c.ID_AnuncioNavigation.ID_CarroNavigation?.ID_ModeloNavigation?.ID_MarcaNavigation?.Nome} {c.ID_AnuncioNavigation.ID_CarroNavigation?.ID_ModeloNavigation?.Nome}",
+                    CompradorNome = compradorUser?.Nome,
+                    CompradorEmail = compradorUser?.Email,
+                    CompradorContacto = compradorUser?.Contacto
+                });
+            }
 
-            return compras;
+            return result;
         }
 
         public async Task<bool> CancelCompraAsync(int compraId, int compradorId)

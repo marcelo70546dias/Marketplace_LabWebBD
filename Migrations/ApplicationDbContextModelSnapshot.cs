@@ -445,7 +445,7 @@ namespace Marketplace_LabWebBD.Migrations
 
                     b.HasIndex("ID_Utilizador");
 
-                    b.ToTable("Cria");
+                    b.ToTable("Cria", (string)null);
                 });
 
             modelBuilder.Entity("Marketplace_LabWebBD.Models.Filtro_Favorito", b =>
@@ -472,6 +472,9 @@ namespace Marketplace_LabWebBD.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("Cor")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("Data_Criacao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -494,6 +497,12 @@ namespace Marketplace_LabWebBD.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(150)");
 
+                    b.Property<int?>("Lotacao_Max")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Lotacao_Min")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nome_Filtro")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -507,6 +516,9 @@ namespace Marketplace_LabWebBD.Migrations
                         .HasColumnType("decimal(10, 2)");
 
                     b.Property<int?>("Quilometragem_Max")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Quilometragem_Min")
                         .HasColumnType("int");
 
                     b.HasKey("ID_Filtro")
@@ -566,6 +578,9 @@ namespace Marketplace_LabWebBD.Migrations
                     b.Property<DateTime>("Data_Inicio")
                         .HasColumnType("datetime");
 
+                    b.Property<DateTime?>("Data_Resposta")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Estado")
                         .HasMaxLength(30)
                         .IsUnicode(false)
@@ -576,6 +591,9 @@ namespace Marketplace_LabWebBD.Migrations
 
                     b.Property<int>("ID_Comprador")
                         .HasColumnType("int");
+
+                    b.Property<string>("Motivo_Recusa")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID_Historico")
                         .HasName("PK__Historic__ECA88795102F448E");
@@ -787,7 +805,7 @@ namespace Marketplace_LabWebBD.Migrations
 
                     b.HasIndex("ID_Marca");
 
-                    b.ToTable("Preferencias");
+                    b.ToTable("Preferencias", (string)null);
                 });
 
             modelBuilder.Entity("Marketplace_LabWebBD.Models.Utilizador", b =>
@@ -969,7 +987,7 @@ namespace Marketplace_LabWebBD.Migrations
 
                     b.HasIndex("ID_Comprador");
 
-                    b.ToTable("Visita");
+                    b.ToTable("Visita", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>

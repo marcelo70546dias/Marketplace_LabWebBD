@@ -28,6 +28,9 @@ namespace Marketplace_LabWebBD.ViewModels
         [Display(Name = "Preço Máximo")]
         public decimal? Preco_Max { get; set; }
 
+        [Display(Name = "Quilometragem Mínima")]
+        public int? Quilometragem_Min { get; set; }
+
         [Display(Name = "Quilometragem Máxima")]
         public int? Quilometragem_Max { get; set; }
 
@@ -36,6 +39,15 @@ namespace Marketplace_LabWebBD.ViewModels
 
         [Display(Name = "Caixa")]
         public string? Caixa { get; set; }
+
+        [Display(Name = "Cor")]
+        public string? Cor { get; set; }
+
+        [Display(Name = "Lotação Mínima")]
+        public int? Lotacao_Min { get; set; }
+
+        [Display(Name = "Lotação Máxima")]
+        public int? Lotacao_Max { get; set; }
 
         [Display(Name = "Distrito")]
         public string? Distrito { get; set; }
@@ -57,6 +69,7 @@ namespace Marketplace_LabWebBD.ViewModels
         public List<SelectListItem> Marcas { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Modelos { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Combustiveis { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> Cores { get; set; } = new List<SelectListItem>();
 
         public List<SelectListItem> CategoriasDisponiveis => new List<SelectListItem>
         {
@@ -121,9 +134,13 @@ namespace Marketplace_LabWebBD.ViewModels
                 || Ano_Max.HasValue
                 || Preco_Min.HasValue
                 || Preco_Max.HasValue
+                || Quilometragem_Min.HasValue
                 || Quilometragem_Max.HasValue
                 || ID_Combustivel.HasValue
                 || !string.IsNullOrEmpty(Caixa)
+                || !string.IsNullOrEmpty(Cor)
+                || Lotacao_Min.HasValue
+                || Lotacao_Max.HasValue
                 || !string.IsNullOrEmpty(Distrito);
         }
 

@@ -63,33 +63,38 @@ namespace Marketplace_LabWebBD.Services
         public async Task<List<PedidoPromocaoAdminViewModel>> GetPedidosPendentesAsync()
         {
             var pedidos = await _context.PedidoPromocaoAdmins
-                .Include(p => p.ID_UtilizadorNavigation)
                 .Where(p => p.Estado == "Pendente")
                 .OrderBy(p => p.Data_Pedido)
                 .ToListAsync();
 
-            return pedidos.Select(p => MapToViewModel(p)).ToList();
+            var result = new List<PedidoPromocaoAdminViewModel>();
+            foreach (var pedido in pedidos)
+            {
+                result.Add(await MapToViewModelAsync(pedido));
+            }
+            return result;
         }
 
         public async Task<List<PedidoPromocaoAdminViewModel>> GetAllPedidosAsync()
         {
             var pedidos = await _context.PedidoPromocaoAdmins
-                .Include(p => p.ID_UtilizadorNavigation)
-                .Include(p => p.ID_Admin_RespostaNavigation)
                 .OrderByDescending(p => p.Data_Pedido)
                 .ToListAsync();
 
-            return pedidos.Select(p => MapToViewModel(p)).ToList();
+            var result = new List<PedidoPromocaoAdminViewModel>();
+            foreach (var pedido in pedidos)
+            {
+                result.Add(await MapToViewModelAsync(pedido));
+            }
+            return result;
         }
 
         public async Task<PedidoPromocaoAdminViewModel?> GetPedidoByIdAsync(int pedidoId)
         {
             var pedido = await _context.PedidoPromocaoAdmins
-                .Include(p => p.ID_UtilizadorNavigation)
-                .Include(p => p.ID_Admin_RespostaNavigation)
                 .FirstOrDefaultAsync(p => p.ID_Pedido == pedidoId);
 
-            return pedido != null ? MapToViewModel(pedido) : null;
+            return pedido != null ? await MapToViewModelAsync(pedido) : null;
         }
 
         public async Task<bool> AprovarPedidoAsync(int pedidoId, int adminId, string? observacoes)
@@ -170,19 +175,32 @@ namespace Marketplace_LabWebBD.Services
                 .CountAsync(p => p.Estado == "Pendente");
         }
 
-        private PedidoPromocaoAdminViewModel MapToViewModel(PedidoPromocaoAdmin pedido)
+        private async Task<PedidoPromocaoAdminViewModel> MapToViewModelAsync(PedidoPromocaoAdmin pedido)
         {
+            // Load user data via UserManager
+            var user = await _userManager.FindByIdAsync(pedido.ID_Utilizador.ToString());
+            string nomeUtilizador = user?.Nome ?? "N/A";
+            string emailUtilizador = user?.Email ?? "N/A";
+
+            // Load admin resposta data via UserManager if exists
+            string? nomeAdminResposta = null;
+            if (pedido.ID_Admin_Resposta.HasValue)
+            {
+                var adminUser = await _userManager.FindByIdAsync(pedido.ID_Admin_Resposta.Value.ToString());
+                nomeAdminResposta = adminUser?.Nome;
+            }
+
             return new PedidoPromocaoAdminViewModel
             {
                 ID_Pedido = pedido.ID_Pedido,
                 ID_Utilizador = pedido.ID_Utilizador,
-                NomeUtilizador = pedido.ID_UtilizadorNavigation?.Nome ?? "N/A",
-                EmailUtilizador = pedido.ID_UtilizadorNavigation?.Email ?? "N/A",
+                NomeUtilizador = nomeUtilizador,
+                EmailUtilizador = emailUtilizador,
                 Tipo_Utilizador_Atual = pedido.Tipo_Utilizador_Atual,
                 Data_Pedido = pedido.Data_Pedido,
                 Estado = pedido.Estado,
                 Data_Resposta = pedido.Data_Resposta,
-                NomeAdminResposta = pedido.ID_Admin_RespostaNavigation?.Nome,
+                NomeAdminResposta = nomeAdminResposta,
                 Justificacao = pedido.Justificacao,
                 Observacoes_Admin = pedido.Observacoes_Admin
             };

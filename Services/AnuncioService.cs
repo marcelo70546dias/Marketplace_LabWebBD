@@ -3,6 +3,7 @@ using Marketplace_LabWebBD.Models;
 using Marketplace_LabWebBD.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Marketplace_LabWebBD.Services
 {
@@ -10,11 +11,13 @@ namespace Marketplace_LabWebBD.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AnuncioService(ApplicationDbContext context, IImageUploadService imageUploadService)
+        public AnuncioService(ApplicationDbContext context, IImageUploadService imageUploadService, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _imageUploadService = imageUploadService;
+            _userManager = userManager;
         }
 
         public async Task<List<AnuncioViewModel>> GetAnunciosByVendedorAsync(int vendedorId)
@@ -28,12 +31,16 @@ namespace Marketplace_LabWebBD.Services
                 .Include(a => a.ID_CarroNavigation)
                     .ThenInclude(c => c.Fotos)
                 .Include(a => a.Reservado_PorNavigation)
-                    .ThenInclude(c => c!.ID_UtilizadorNavigation)
                 .Where(a => a.ID_Vendedor == vendedorId)
                 .OrderByDescending(a => a.Data_Publicacao)
                 .ToListAsync();
 
-            return anuncios.Select(a => MapToViewModel(a)).ToList();
+            var result = new List<AnuncioViewModel>();
+            foreach (var anuncio in anuncios)
+            {
+                result.Add(await MapToViewModelAsync(anuncio));
+            }
+            return result;
         }
 
         public async Task<AnuncioViewModel?> GetAnuncioByIdAsync(int anuncioId)
@@ -47,10 +54,9 @@ namespace Marketplace_LabWebBD.Services
                 .Include(a => a.ID_CarroNavigation)
                     .ThenInclude(c => c.Fotos)
                 .Include(a => a.Reservado_PorNavigation)
-                    .ThenInclude(c => c!.ID_UtilizadorNavigation)
                 .FirstOrDefaultAsync(a => a.ID_Anuncio == anuncioId);
 
-            return anuncio != null ? MapToViewModel(anuncio) : null;
+            return anuncio != null ? await MapToViewModelAsync(anuncio) : null;
         }
 
         public async Task<AnuncioViewModel?> GetAnuncioDetailsAsync(int anuncioId, int vendedorId)
@@ -64,10 +70,9 @@ namespace Marketplace_LabWebBD.Services
                 .Include(a => a.ID_CarroNavigation)
                     .ThenInclude(c => c.Fotos)
                 .Include(a => a.Reservado_PorNavigation)
-                    .ThenInclude(c => c!.ID_UtilizadorNavigation)
                 .FirstOrDefaultAsync(a => a.ID_Anuncio == anuncioId && a.ID_Vendedor == vendedorId);
 
-            return anuncio != null ? MapToViewModel(anuncio) : null;
+            return anuncio != null ? await MapToViewModelAsync(anuncio) : null;
         }
 
         public async Task<int> CreateAnuncioAsync(CreateAnuncioViewModel model, int vendedorId)
@@ -78,8 +83,10 @@ namespace Marketplace_LabWebBD.Services
                 ID_Vendedor = vendedorId,
                 Ano = model.Ano,
                 Quilometragem = model.Quilometragem,
+                Lotacao = model.Lotacao,
                 Categoria = model.Categoria,
                 Caixa = model.Caixa,
+                Cor = model.Cor,
                 ID_Modelo = model.ID_Modelo,
                 ID_Combustivel = model.ID_Combustivel
             };
@@ -137,8 +144,10 @@ namespace Marketplace_LabWebBD.Services
             var carro = anuncio.ID_CarroNavigation;
             carro.Ano = model.Ano;
             carro.Quilometragem = model.Quilometragem;
+            carro.Lotacao = model.Lotacao;
             carro.Categoria = model.Categoria;
             carro.Caixa = model.Caixa;
+            carro.Cor = model.Cor;
             carro.ID_Modelo = model.ID_Modelo;
             carro.ID_Combustivel = model.ID_Combustivel;
 
@@ -260,6 +269,27 @@ namespace Marketplace_LabWebBD.Services
             return combustiveis;
         }
 
+        public List<SelectListItem> GetCores()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Value = "Branco", Text = "Branco" },
+                new SelectListItem { Value = "Preto", Text = "Preto" },
+                new SelectListItem { Value = "Prata", Text = "Prata" },
+                new SelectListItem { Value = "Cinzento", Text = "Cinzento" },
+                new SelectListItem { Value = "Azul", Text = "Azul" },
+                new SelectListItem { Value = "Vermelho", Text = "Vermelho" },
+                new SelectListItem { Value = "Verde", Text = "Verde" },
+                new SelectListItem { Value = "Amarelo", Text = "Amarelo" },
+                new SelectListItem { Value = "Laranja", Text = "Laranja" },
+                new SelectListItem { Value = "Castanho", Text = "Castanho" },
+                new SelectListItem { Value = "Bege", Text = "Bege" },
+                new SelectListItem { Value = "Dourado", Text = "Dourado" },
+                new SelectListItem { Value = "Roxo", Text = "Roxo" },
+                new SelectListItem { Value = "Outro", Text = "Outro" }
+            };
+        }
+
         public async Task<EditAnuncioViewModel?> GetAnuncioForEditAsync(int anuncioId, int vendedorId)
         {
             var anuncio = await _context.Anuncios
@@ -289,8 +319,10 @@ namespace Marketplace_LabWebBD.Services
 
                 Ano = carro.Ano,
                 Quilometragem = carro.Quilometragem,
+                Lotacao = carro.Lotacao ?? 5,
                 Categoria = carro.Categoria ?? string.Empty,
                 Caixa = carro.Caixa ?? string.Empty,
+                Cor = carro.Cor ?? string.Empty,
                 ID_Modelo = carro.ID_Modelo,
                 ID_Combustivel = carro.ID_Combustivel,
                 ID_Marca = modelo.ID_Marca,
@@ -304,7 +336,8 @@ namespace Marketplace_LabWebBD.Services
 
                 Marcas = await GetMarcasAsync(),
                 Modelos = await GetModelosByMarcaAsync(modelo.ID_Marca),
-                Combustiveis = await GetCombustiveisAsync()
+                Combustiveis = await GetCombustiveisAsync(),
+                Cores = GetCores()
             };
 
             return viewModel;
@@ -434,12 +467,20 @@ namespace Marketplace_LabWebBD.Services
         }
 
         // Helper method para mapear Anuncio para ViewModel
-        private AnuncioViewModel MapToViewModel(Anuncio anuncio)
+        private async Task<AnuncioViewModel> MapToViewModelAsync(Anuncio anuncio)
         {
             var carro = anuncio.ID_CarroNavigation;
             var modelo = carro.ID_ModeloNavigation;
             var marca = modelo.ID_MarcaNavigation;
             var combustivel = carro.ID_CombustivelNavigation;
+
+            // Load comprador data via UserManager if reserved
+            string? nomeComprador = null;
+            if (anuncio.Reservado_Por.HasValue && anuncio.Reservado_PorNavigation != null)
+            {
+                var compradorUser = await _userManager.FindByIdAsync(anuncio.Reservado_PorNavigation.ID_Utilizador.ToString());
+                nomeComprador = compradorUser?.Nome;
+            }
 
             return new AnuncioViewModel
             {
@@ -474,7 +515,7 @@ namespace Marketplace_LabWebBD.Services
 
                 Reservado_Por = anuncio.Reservado_Por,
                 Reservado_Ate = anuncio.Reservado_Ate,
-                NomeComprador = anuncio.Reservado_PorNavigation?.ID_UtilizadorNavigation?.Nome,
+                NomeComprador = nomeComprador,
 
                 ID_Modelo = carro.ID_Modelo,
                 ID_Combustivel = carro.ID_Combustivel,

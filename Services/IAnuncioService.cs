@@ -23,6 +23,7 @@ namespace Marketplace_LabWebBD.Services
         Task<List<SelectListItem>> GetMarcasAsync();
         Task<List<SelectListItem>> GetModelosByMarcaAsync(int marcaId);
         Task<List<SelectListItem>> GetCombustiveisAsync();
+        List<SelectListItem> GetCores();
 
         // Obter dados para edição
         Task<EditAnuncioViewModel?> GetAnuncioForEditAsync(int anuncioId, int vendedorId);

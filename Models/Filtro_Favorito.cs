@@ -25,11 +25,19 @@ public partial class Filtro_Favorito
 
     public decimal? Preco_Max { get; set; }
 
+    public int? Quilometragem_Min { get; set; }
+
     public int? Quilometragem_Max { get; set; }
 
     public int? ID_Combustivel { get; set; }
 
     public string? Caixa { get; set; }
+
+    public string? Cor { get; set; }
+
+    public int? Lotacao_Min { get; set; }
+
+    public int? Lotacao_Max { get; set; }
 
     public string? Localizacao { get; set; }
 

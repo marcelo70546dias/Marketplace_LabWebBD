@@ -29,7 +29,7 @@
                         <div class="col-md-8">
                             <h4>@Model.Titulo</h4>
                             <p class="text-muted">@Model.MarcaModelo</p>
-                            <h5 class="text-primary">@Model.Preco.ToString("C")</h5>
+                            <h5 class="text-primary">@Model.Preco.ToString("N0") €</h5>
                             <p><small class="text-muted">Data: @Model.Data.ToString("dd/MM/yyyy")</small></p>
                         </div>
                     </div>
@@ -62,7 +62,7 @@
                                     <div class="alert alert-info">
                                         <p><strong>Entidade:</strong> @Model.EntidadeMB</p>
                                         <p><strong>Referência:</strong> @Model.ReferenciaMB</p>
-                                        <p><strong>Valor:</strong> @Model.Preco.ToString("C")</p>
+                                        <p><strong>Valor:</strong> @Model.Preco.ToString("N0") €</p>
                                         <small>Use estes dados para efetuar o pagamento em qualquer caixa Multibanco ou homebanking.</small>
                                     </div>
                                 }
@@ -70,7 +70,7 @@
                                 {
                                     <div class="alert alert-info">
                                         <p><strong>Número de Telemóvel:</strong> @Model.NumeroTelemovelMBWay</p>
-                                        <p><strong>Valor:</strong> @Model.Preco.ToString("C")</p>
+                                        <p><strong>Valor:</strong> @Model.Preco.ToString("N0") €</p>
                                         <small>Receberá uma notificação MB Way para confirmar o pagamento.</small>
                                     </div>
                                 }
@@ -78,7 +78,7 @@
                                 {
                                     <div class="alert alert-info">
                                         <p><strong>IBAN:</strong> @Model.IBAN</p>
-                                        <p><strong>Valor:</strong> @Model.Preco.ToString("C")</p>
+                                        <p><strong>Valor:</strong> @Model.Preco.ToString("N0") €</p>
                                         <p><strong>Descrição:</strong> Pedido #@Model.ID_Compra</p>
                                         <small>Efetue a transferência usando os dados acima.</small>
                                     </div>

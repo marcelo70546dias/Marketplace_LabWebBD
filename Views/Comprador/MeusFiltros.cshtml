@@ -1,0 +1,94 @@
+@model List<FiltroFavoritoViewModel>
+
+@{
+    ViewData["Title"] = "Meus Filtros Favoritos";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-bookmark-star"></i> Meus Filtros Favoritos</h2>
+                <a asp-action="Search" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Nova Pesquisa
+                </a>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-bookmark-x text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mt-3">Ainda não tem filtros guardados</h4>
+                    <p class="text-muted">Quando fizer uma pesquisa, pode guardar os filtros para acesso rápido.</p>
+                    <a asp-action="Search" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Fazer Pesquisa
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var filtro in Model)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-funnel"></i> @filtro.Nome_Filtro
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small text-muted mb-2">
+                                        <i class="bi bi-calendar"></i>
+                                        Criado em: @filtro.Data_Criacao?.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+
+                                    <div class="mb-3">
+                                        <strong>Critérios:</strong>
+                                        <p class="small mb-0">@filtro.GetDescricao()</p>
+                                    </div>
+
+                                    <div class="alert alert-info py-2 mb-0">
+                                        <i class="bi bi-info-circle"></i>
+                                        <strong>@filtro.NumResultados</strong>
+                                        @(filtro.NumResultados == 1 ? "anúncio disponível" : "anúncios disponíveis")
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <div class="d-grid gap-2">
+                                        <a asp-action="ApplyFilter" asp-route-id="@filtro.ID_Filtro" class="btn btn-success">
+                                            <i class="bi bi-search"></i> Aplicar Filtro
+                                        </a>
+                                        <form asp-action="DeleteFilter" asp-route-id="@filtro.ID_Filtro" method="post" class="d-inline"
+                                              onsubmit="return confirm('Tem a certeza que deseja eliminar este filtro?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
